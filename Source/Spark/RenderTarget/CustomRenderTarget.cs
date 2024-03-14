@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Avalonia.Renderers;
+namespace Spark.RenderTarget;
 
 public class CustomRenderTarget : BaseRenderTarget
 {
@@ -13,7 +13,7 @@ public class CustomRenderTarget : BaseRenderTarget
 
     }
 
-    public void ReSize(int width, int height)
+    public void Resize(int width, int height)
     {
 
     }

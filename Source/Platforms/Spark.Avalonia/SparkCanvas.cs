@@ -2,6 +2,7 @@
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Silk.NET.OpenGLES;
+using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
 using System.Diagnostics;
 using System.Drawing;
@@ -14,7 +15,6 @@ public class SparkCanvas : OpenGlControlBase
     public SparkCanvas()
     {
         Engine = new Engine();
-        Renderer = new BaseRenderer(Engine);
     }
 
     public static readonly RoutedEvent<RoutedEventArgs> BeginPlayEvent =
@@ -35,7 +35,6 @@ public class SparkCanvas : OpenGlControlBase
     }
 
     public Engine Engine { get; private set; }
-    public BaseRenderer Renderer { get; private set; }
 
     Stopwatch DeltaTimeStopwatch = new Stopwatch();
 
@@ -44,7 +43,6 @@ public class SparkCanvas : OpenGlControlBase
         base.OnOpenGlInit(gl);
         RoutedEventArgs args = new RoutedEventArgs(BeginPlayEvent);
         RaiseEvent(args);
-
         DeltaTimeStopwatch.Start();
     }
     protected override void OnOpenGlRender(GlInterface gl, int fb)

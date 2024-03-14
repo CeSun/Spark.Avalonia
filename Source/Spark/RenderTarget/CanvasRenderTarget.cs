@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Avalonia.Renderers;
+namespace Spark.RenderTarget;
 
 public class CanvasRenderTarget : BaseRenderTarget
 {

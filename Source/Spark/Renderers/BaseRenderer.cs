@@ -1,34 +1,12 @@
 ﻿using Silk.NET.OpenGLES;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Spark.Avalonia.Actors;
 
 namespace Spark.Avalonia.Renderers
 {
-    public class BaseRenderer
+    public interface IRenderer
     {
-        protected Engine Engine;
-        public BaseRenderer(Engine engine)
-        {
-            Engine = engine;
-        }
 
-        public virtual void Begin(GL gl)
-        {
-
-        }
-
-        public virtual void Render(GL gl)
-        {
-
-        }
-
-        public virtual void End(GL gl)
-        {
-
-        }
+        void Render(GL gl, CameraActor Camera);
 
     }
 }

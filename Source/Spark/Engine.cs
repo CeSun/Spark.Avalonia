@@ -1,6 +1,8 @@
 ﻿using Silk.NET.OpenGLES;
 using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
+using Spark.Renderers;
+using Spark.RenderTarget;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,21 +14,27 @@ namespace Spark.Avalonia;
 
 public class Engine
 {
+    IRenderer Renderer;
+    public List<Action<GL>> RenderMethods = new List<Action<GL>>(); 
     public BaseRenderTarget DefaultRenderTarget { get; set; }
     public Engine() 
     {
+        Renderer = new ForwardRenderer();
         DefaultRenderTarget = new CanvasRenderTarget();
     }
 
     public T CreateActor<T>() where T : Actor, new()
     {
-        var actor = new T() { Engine = this};
+        var actor = new T();
+        actor.Engine = this;
         RegisterActor(actor);
+        actor.Initialize();
         return actor;
     }
 
     public void RemoveActor(Actor actor)
     {
+        actor.Uninitialize();
         UnregisterActor(actor);
     }
 
@@ -63,6 +71,12 @@ public class Engine
 
     public void Render(GL gl)
     {
-        CameraActors.ForEach(camera => camera.RenderSence(gl));
+        RenderMethods.ForEach(m => m(gl));
+        RenderMethods.Clear();
+        CameraActors.Sort((left, right) =>
+        {
+            return left.Order.CompareTo(right.Order);
+        });
+        CameraActors.ForEach(camera => Renderer.Render(gl, camera));
     }
 }

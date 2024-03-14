@@ -1,39 +1,40 @@
 ﻿using Silk.NET.OpenGLES;
 using Silk.NET.Windowing;
 using Spark.Avalonia;
+using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
 
 var options = WindowOptions.Default with { API = new GraphicsAPI(ContextAPI.OpenGLES, ContextProfile.Core, ContextFlags.ForwardCompatible, new APIVersion(3, 0)) };
 var window = Window.Create(options);
 
-window.Run();
-var engine = new Engine();
-var renderer = new BaseRenderer(engine);
+var Engine = new Engine();
 GL? gl = null;
 
+var camera1 = Engine.CreateActor<CameraActor>();
 
 window.Resize += size =>
 {
-    engine.DefaultRenderTarget.Width = size.X;
-    engine.DefaultRenderTarget.Height = size.Y;
+    Engine.DefaultRenderTarget.Width = size.X;
+    Engine.DefaultRenderTarget.Height = size.Y;
 };
 window.Load += () =>
 {
-    engine.DefaultRenderTarget.Width = window.Size.X;
-    engine.DefaultRenderTarget.Height = window.Size.Y;
+    Engine.DefaultRenderTarget.Width = window.Size.X;
+    Engine.DefaultRenderTarget.Height = window.Size.Y;
     gl = GL.GetApi(window);
 };
 window.Render += deltaTime =>
 {
-    engine.Render(gl!);
+    Engine.Render(gl!);
 };
 
 window.Update += deltaTime =>
 {
-    engine.Update((float)deltaTime);
+    Engine.Update((float)deltaTime);
 };
 
 window.Closing += () =>
 {
     
 };
+window.Run();
