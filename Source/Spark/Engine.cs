@@ -3,6 +3,7 @@ using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
 using Spark.Renderers;
 using Spark.RenderTarget;
+using Spark.Util;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -17,8 +18,11 @@ public class Engine
     IRenderer Renderer;
     public List<Action<GL>> RenderMethods = new List<Action<GL>>(); 
     public BaseRenderTarget DefaultRenderTarget { get; set; }
+
+    public Octree Octree { get; private set; }
     public Engine() 
     {
+        Octree = new Octree();
         Renderer = new ForwardRenderer();
         DefaultRenderTarget = new CanvasRenderTarget();
     }

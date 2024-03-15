@@ -10,5 +10,24 @@ namespace Spark.Actors;
 
 public class StaticMeshActor : Actor
 {
-    public StaticMesh? StaticMesh;
+    private StaticMesh? _StaticMesh;
+    public StaticMesh? StaticMesh
+    {
+        get => _StaticMesh;
+        set
+        {
+            if (_StaticMesh == value && value != null)
+            {
+                // updateBox
+            }
+            else if (_StaticMesh != null && value == null)
+            {
+
+            }
+            else if (_StaticMesh != null && value != null) 
+            {
+            
+            }
+        }
+    }
 }

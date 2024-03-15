@@ -5,6 +5,9 @@ using StbImageSharp;
 using SharpGLTF.Schema2;
 using Texture = Spark.Avalonia.Assets.Texture;
 using Silk.NET.OpenGLES;
+using System.Numerics;
+using Material = Spark.Avalonia.Assets.Material;
+using Spark.Actors;
 
 namespace Spark.Importer;
 
@@ -54,14 +57,59 @@ public static class Importer
     private static StaticMesh ImportStaticMeshFromGltfModel(this Engine engine, ModelRoot model)
     {
         var staticMesh = new StaticMesh();
-        foreach(var glMesh in model.LogicalMeshes)
+        foreach(var glMeshes in model.LogicalMeshes)
         {
-            foreach(var primitive in glMesh.Primitives)
+            Element element = new Element(); 
+            foreach(var mesh in glMeshes.Primitives)
             {
-                primitive.GetVertexAccessor("");
-            }
-        }
+                // 顶点
+                var Position = mesh.GetVertexAccessor("POSITION").AsVector3Array();
+                var Normal = mesh.GetVertexAccessor("NORMAL").AsVector3Array();
+                var TexCoord = mesh.GetVertexAccessor("TEXCOORD_0").AsVector2Array();
+                var Color = mesh.GetVertexAccessor("COLOR_0").AsColorArray();
+                for (var i = 0; i < Position.Count; i++)
+                {
+                    Vertex vertex = new Vertex() 
+                    {
+                        Position = Position[i],
+                        TexCoord = TexCoord[i],
+                        Normal = Normal[i],
+                        Color = new Vector3(Color[i].X, Color[i].Y, Color[i].Z)
+                    };
 
+                    element.Vertices.Add(vertex);
+                }
+                // ebo
+                element.Indices.AddRange(mesh.IndexAccessor.AsIndicesArray());
+                // 材质
+                if (mesh.Material != null)
+                {
+                    element.Material = new Material()
+                    {
+                        ShaderModel = ShaderModel.BlinnPhong,
+                        BlendMode = mesh.Material.Alpha switch
+                        {
+                            AlphaMode.OPAQUE => BlendMode.Opaque,
+                            AlphaMode.MASK => BlendMode.Masked,
+                            AlphaMode.BLEND => BlendMode.Translucent,
+                            _ => BlendMode.Opaque,
+                        }
+                    };
+                    if (mesh.Material.Channels.Count() > 0)
+                    {
+                        element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray());
+                        var channel = mesh.Material.FindChannel("Normal");
+                        if (channel != null)
+                        {
+                            element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                        }
+                    }
+                }
+            }
+            element.CalcBTN();
+            engine.RenderMethods.Add(element.SetupRender);
+            staticMesh.Elements.Add(element);
+        }
         return staticMesh;
     }
 
