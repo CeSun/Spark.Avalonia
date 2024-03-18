@@ -106,7 +106,8 @@ public static class Importer
                     }
                 }
             }
-            element.CalcBTN();
+            element.SetupBTN();
+            element.SetupConvexHull();
             engine.RenderMethods.Add(element.SetupRender);
             staticMesh.Elements.Add(element);
         }

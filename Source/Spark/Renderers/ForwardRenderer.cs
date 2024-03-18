@@ -1,4 +1,6 @@
 ﻿using Silk.NET.OpenGLES;
+using Spark.Actors;
+using Spark.Assets;
 using Spark.Avalonia;
 using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
@@ -12,12 +14,42 @@ namespace Spark.Renderers;
 
 public class ForwardRenderer : IRenderer
 {
+    List<Element> NeedRenderStaticMeshs = new List<Element>();
+    List<Element> OpaqueStaticMeshs = new List<Element>();
+    List<Element> MaskedStaticMeshs = new List<Element>();
+    List<Element> TranslucentStaticMeshs = new List<Element>();
+    
     public void Render(GL gl, CameraActor Camera)
     {
+        LightShadowMapPass(gl);
         using (Camera.RenderTarget.Use(gl))
         {
+            NeedRenderStaticMeshs.Clear();
+            Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
+            Filter();
             Clear(gl, Camera);
+            PreZPass(gl, Camera);
+        }
+    }
 
+    private void Filter()
+    {
+        foreach(var  element in NeedRenderStaticMeshs)
+        {
+            if (element.Material == null)
+                continue;
+            if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Opaque)
+            {
+                OpaqueStaticMeshs.Add(element);
+            }
+            else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Masked)
+            {
+                MaskedStaticMeshs.Add(element);
+            }
+            else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Translucent)
+            {
+                TranslucentStaticMeshs.Add(element);
+            }
         }
     }
 
@@ -37,9 +69,11 @@ public class ForwardRenderer : IRenderer
         if ((Camera.ClearFlag & CameraClearFlag.Skybox) == CameraClearFlag.Skybox)
             RenderSkybox(gl, Camera);
     }
+    private void LightShadowMapPass(GL gl)
+    {
 
-    
-    public void PreDepth(GL gl, CameraActor Camera)
+    }
+    public void PreZPass(GL gl, CameraActor Camera)
     {
 
     }

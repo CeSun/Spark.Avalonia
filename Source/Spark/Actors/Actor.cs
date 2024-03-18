@@ -44,15 +44,64 @@ public class Actor
     public Quaternion WorldRotation => WorldTransform.Rotation();
     public Vector3 WorldScale => WorldTransform.Scale();
     public Matrix4x4 Transform => MatrixHelper.CreateTransform(Position, Rotation, Scale);
-    public Vector3 Position { get; set; }
-    public Quaternion Rotation { get; set; }
-    public Vector3 Scale { get; set; } = Vector3.One;
+
+    public bool IsDirty 
+    {
+        get => _IsDirty;
+        set
+        {
+            _IsDirty = value;
+            if (_IsDirty == true || value == false)
+                return;
+            foreach (var child in Children)
+            {
+                child.IsDirty = true;
+            }
+        }
+    }
+
+    private bool _IsDirty = false;
+    public Vector3 Position 
+    {
+        get => _Position;
+        set 
+        {
+            IsDirty = true;
+            _Position = value;
+        } 
+    }
+    public Quaternion Rotation 
+    { 
+        get => _Rotation; 
+        set
+        {
+            IsDirty = true;
+            _Rotation = value;
+        }
+    }
+    public Vector3 Scale 
+    {
+        get => _Scale;
+        set
+        {
+            IsDirty = true;
+            _Scale = value;
+        }
+    }
 
     public Vector3 ForwardVector => Vector3.Transform(new Vector3(0, 0, -1), WorldRotation);
     public Vector3 RightVector => Vector3.Transform(new Vector3(1, 0, 0), WorldRotation);
     public Vector3 UpVector => Vector3.Transform(new Vector3(0, 1, 0), WorldRotation);
 
     public virtual void Update(float deltaTime)
+    {
+        if (IsDirty == true)
+        {
+            OnTransformChanged();
+            IsDirty = false;
+        }
+    }
+    public virtual void OnTransformChanged()
     {
 
     }
@@ -66,5 +115,10 @@ public class Actor
     {
 
     }
+
+    public Vector3 _Position;
+    public Quaternion _Rotation;
+    public Vector3 _Scale = Vector3.One;
+
 
 }

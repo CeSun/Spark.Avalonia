@@ -1,4 +1,5 @@
-﻿using Silk.NET.OpenGLES;
+﻿using Jitter.LinearMath;
+using Silk.NET.OpenGLES;
 using Spark.Avalonia.Assets;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,20 @@ public class Element
         Indices.Clear();
     }
 
-    public void CalcBTN()
+    public List<Vector3> ConvexHull = new List<Vector3>();
+
+    public void SetupConvexHull()
+    {
+        ConvexHull.Clear();
+        List<Vector3> vertices = new List<Vector3>();
+        Vertices.ForEach(V => vertices.Add(V.Position));
+        var list = JConvexHull.Build(vertices, JConvexHull.Approximation.Level10);
+        foreach(var i in list)
+        {
+            ConvexHull.Add(vertices[i]);
+        }
+    }
+    public void SetupBTN()
     {
         for (int i = 0; i < Indices.Count; i += 3)
         {

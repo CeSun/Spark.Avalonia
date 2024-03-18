@@ -7,7 +7,7 @@ namespace Spark.Util;
 
 public class Octree
 {
-    static readonly float SideLength = 1024;
+    static readonly float SideLength = 1024 * 1024;
     static readonly int MaxLayer = 8;
 
     Box CurrentBox;
@@ -135,7 +135,7 @@ public class Octree
                 TargetIndex = i;
                 break;
             }
-        }
+         }
 
         if (TargetIndex < 0)
         {
@@ -184,7 +184,7 @@ InsertCurrentNode:
             return;
         foreach (var subox in boundingBoxes)
         {
-            if (subox.Actor is T t && subox.TestPlanes(Planes))
+            if (subox.Object is T t && subox.TestPlanes(Planes))
             {
                 Components.Add(t);
             }
@@ -203,7 +203,7 @@ InsertCurrentNode:
             return;
         foreach (var subox in boundingBoxes)
         {
-            if (subox.Actor is T t &&  sphere.TestBox(new Box() { MinPoint = subox.MinPoint, MaxPoint = subox.MaxPoint }))
+            if (subox.Object is T t &&  sphere.TestBox(new Box() { MinPoint = subox.MinPoint, MaxPoint = subox.MaxPoint }))
             {
                 Actors.Add(t);
             }
@@ -221,13 +221,13 @@ InsertCurrentNode:
 
 public abstract class BaseBounding
 {
-    public BaseBounding(Actor Actor)
+    public BaseBounding(object Object)
     {
-        this.Actor = Actor;
+        this.Object = Object;
     }
     public Octree? ParentNode;
 
-    public Actor Actor;
+    public object Object;
     public abstract bool TestPlanes(Plane[] planes);
 
     public abstract float XLength { get; }
@@ -244,7 +244,7 @@ public class BoundingBox : BaseBounding
 {
 
     public Box Box;
-    public BoundingBox(Actor Actor) : base(Actor)
+    public BoundingBox(object Object) : base(Object)
     {
         Box.MinPoint = Vector3.Zero;
         Box.MaxPoint = Vector3.Zero;

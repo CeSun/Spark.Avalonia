@@ -1,8 +1,10 @@
 ﻿using Spark.Assets;
 using Spark.Avalonia.Actors;
+using Spark.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,18 +18,80 @@ public class StaticMeshActor : Actor
         get => _StaticMesh;
         set
         {
-            if (_StaticMesh == value && value != null)
+            if (_StaticMesh == value)
+                return;
+            if (_StaticMesh != null)
             {
-                // updateBox
+                UnregisterFromOctree();
+                _StaticMesh = null;
             }
-            else if (_StaticMesh != null && value == null)
+            if (value != null)
             {
-
-            }
-            else if (_StaticMesh != null && value != null) 
-            {
-            
+                _StaticMesh = value;
+                RegisterToOctree();
             }
         }
     }
+    List<BoundingBox> BoundingBoxes { get; set; } = new List<BoundingBox>();
+    private void RegisterToOctree()
+    {
+        if (_StaticMesh == null)
+            return;
+        var matrix = this.WorldTransform;
+        foreach (var element in _StaticMesh.Elements)
+        {
+            var box = new BoundingBox(element);
+            foreach(var p in element.ConvexHull)
+            {
+                box.Box += Vector3.Transform(p, matrix);
+            }
+            BoundingBoxes.Add(box);
+        }
+        AddToOctree();
+    }
+
+    private void UnregisterFromOctree()
+    {
+        RemoveFromOctree();
+        BoundingBoxes.Clear();
+    }
+    private void RemoveFromOctree()
+    {
+        foreach(var box in BoundingBoxes)
+        {
+            Engine.Octree.RemoveObject(box);
+        }
+    }
+
+    private void AddToOctree()
+    {
+        foreach (var box in BoundingBoxes)
+        {
+            Engine.Octree.InsertObject(box);
+        }
+    }
+
+    private void UpdateOctree()
+    {
+        if (_StaticMesh == null)
+            return;
+        RemoveFromOctree();
+        var matrix = this.WorldTransform;
+        foreach (var box in BoundingBoxes)
+        {
+            box.Box.MinPoint = Vector3.Zero;
+            box.Box.MaxPoint = Vector3.Zero;
+            foreach(var p in ((Element)box.Object).ConvexHull)
+            {
+                box.Box += Vector3.Transform(p, matrix);
+            }
+        }
+        AddToOctree();
+    }
+    public override void OnTransformChanged()
+    {
+        base.OnTransformChanged();
+        UpdateOctree();
+    }
+
 }
