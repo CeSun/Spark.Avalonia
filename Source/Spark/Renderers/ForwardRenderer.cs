@@ -75,11 +75,20 @@ public class ForwardRenderer : IRenderer
     }
     public void PreZPass(GL gl, CameraActor Camera)
     {
-
+        
     }
 
     public void RenderSkybox(GL gl, CameraActor Camera)
     {
 
+    }
+
+    public void Initialize(GL gl)
+    {
+        var s = ShaderHelper.PreProcessShaderSource("PreZ.vert", new List<string> { "Mobile", "MicroGBuffer"});
+    }
+
+    public void Uninitialize(GL gl)
+    {
     }
 }

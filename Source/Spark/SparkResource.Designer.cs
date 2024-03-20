@@ -59,5 +59,37 @@ namespace Spark {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   查找类似 #glsl core 的本地化字符串。
+        /// </summary>
+        internal static string Common_glsl {
+            get {
+                return ResourceManager.GetString("Common.glsl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似  的本地化字符串。
+        /// </summary>
+        internal static string PreZ_frag {
+            get {
+                return ResourceManager.GetString("PreZ.frag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #include&lt;Common.glsl&gt;
+        ///
+        ///void main()
+        ///{
+        ///
+        ///} 的本地化字符串。
+        /// </summary>
+        internal static string PreZ_vert {
+            get {
+                return ResourceManager.GetString("PreZ.vert", resourceCulture);
+            }
+        }
     }
 }

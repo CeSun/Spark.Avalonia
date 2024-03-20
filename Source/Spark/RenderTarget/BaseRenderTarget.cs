@@ -16,12 +16,19 @@ public class BaseRenderTarget : IDisposable
 
     public int Height;
 
+    private GL? gl;
     public void Dispose()
     {
+        if (gl != null)
+        {
+            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+            gl = null;
+        }
     }
 
     public BaseRenderTarget Use(GL gl)
     {
+        this.gl = gl;
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, FrameBufferObject);
         gl.Viewport(new Size(Width, Height));
         return this;

@@ -86,11 +86,11 @@ public class Engine
 
     public void Initialize(GL gl)
     {
-
+        Renderer.Initialize(gl);
     }
 
     public void Uninitialize(GL gl)
     {
-
+        Renderer.Uninitialize(gl);
     }
 }

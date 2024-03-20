@@ -13,7 +13,7 @@ var window = Window.Create(options);
 var Engine = new Engine();
 GL? gl = null;
 StaticMesh mesh = new StaticMesh();
-using (var sr = new StreamReader("F:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
+using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
 {
     mesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
 }
