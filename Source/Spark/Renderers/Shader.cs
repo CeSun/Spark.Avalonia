@@ -32,7 +32,7 @@ public class Shader : IDisposable
 
 public static class ShaderHelper
 {
-    public static string PreProcessShaderSource(string File, List<string> Micros)
+    public static string PreProcessShaderSource(string File, List<string>? Micros = default)
     {
         var source = SparkResource.ResourceManager.GetString(File)!;
         var lines = source.Split("\n", StringSplitOptions.TrimEntries).ToList();
@@ -76,7 +76,7 @@ public static class ShaderHelper
                 if (start == -1 || end == -1 || end <= start)
                     throw new Exception("shader error");
                 var path = line.Substring(start + 1, end - start - 1);
-                lines[i] = PreProcessShaderSource(path, new List<string>());
+                lines[i] = PreProcessShaderSource(path, null);
             }
         }
         if (Micros != null && Micros.Count > 0) 
