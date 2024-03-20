@@ -5,8 +5,9 @@ namespace Spark.Avalonia.Renderers
 {
     public interface IRenderer
     {
-
+        void Initialize(GL gl);
         void Render(GL gl, CameraActor Camera);
+        void Uninitialize(GL gl);
 
     }
 }

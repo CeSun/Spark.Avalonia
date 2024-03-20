@@ -32,6 +32,7 @@ window.Load += () =>
     Engine.DefaultRenderTarget.Width = window.Size.X;
     Engine.DefaultRenderTarget.Height = window.Size.Y;
     gl = GL.GetApi(window);
+    Engine.Initialize(gl);
 };
 window.Render += deltaTime =>
 {
@@ -45,6 +46,6 @@ window.Update += deltaTime =>
 
 window.Closing += () =>
 {
-    
+    Engine.Uninitialize(gl!);
 };
 window.Run();

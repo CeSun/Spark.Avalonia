@@ -11,4 +11,17 @@
         <PackageReference Include="Silk.NET.OpenGLES" Version="2.20.0" />
         <PackageReference Include="StbImageSharp" Version="2.27.13" />
 	</ItemGroup>
+    <ItemGroup>
+      <Compile Update="SparkResource.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>SparkResource.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Update="SparkResource.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>SparkResource.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
 </Project>

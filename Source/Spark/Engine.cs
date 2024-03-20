@@ -83,4 +83,14 @@ public class Engine
         });
         CameraActors.ForEach(camera => Renderer.Render(gl, camera));
     }
+
+    public void Initialize(GL gl)
+    {
+
+    }
+
+    public void Uninitialize(GL gl)
+    {
+
+    }
 }

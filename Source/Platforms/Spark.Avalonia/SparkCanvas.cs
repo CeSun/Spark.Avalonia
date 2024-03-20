@@ -41,6 +41,7 @@ public class SparkCanvas : OpenGlControlBase
     protected override void OnOpenGlInit(GlInterface gl)
     {
         base.OnOpenGlInit(gl);
+        Engine.Initialize(GL.GetApi(gl.GetProcAddress));
         RoutedEventArgs args = new RoutedEventArgs(BeginPlayEvent);
         RaiseEvent(args);
         DeltaTimeStopwatch.Start();
@@ -70,5 +71,6 @@ public class SparkCanvas : OpenGlControlBase
         base.OnOpenGlDeinit(gl);
         RoutedEventArgs args = new RoutedEventArgs(EndPlayEvent);
         RaiseEvent(args);
+        Engine.Uninitialize(GL.GetApi(gl.GetProcAddress));
     }
 }
