@@ -40,12 +40,14 @@ public class StaticMeshActor : Actor
         var matrix = this.WorldTransform;
         foreach (var element in _StaticMesh.Elements)
         {
-            var box = new BoundingBox(element);
+            var proxy = new ElementProxy(element);
+            var box = new BoundingBox(proxy);
             foreach(var p in element.ConvexHull)
             {
                 box.Box += Vector3.Transform(p, matrix);
             }
             BoundingBoxes.Add(box);
+            proxy.ModelTransform = matrix;
         }
         AddToOctree();
     }
@@ -79,12 +81,14 @@ public class StaticMeshActor : Actor
         var matrix = this.WorldTransform;
         foreach (var box in BoundingBoxes)
         {
+            var Proxy = (ElementProxy)box.Object;
             box.Box.MinPoint = Vector3.Zero;
             box.Box.MaxPoint = Vector3.Zero;
-            foreach(var p in ((Element)box.Object).ConvexHull)
+            foreach(var p in Proxy.Element.ConvexHull)
             {
                 box.Box += Vector3.Transform(p, matrix);
             }
+            Proxy.ModelTransform = matrix;
         }
         AddToOctree();
     }

@@ -17,6 +17,17 @@ public class StaticMesh
     public List<Element> Elements { get; private set; } = new List<Element>();
 }
 
+public class ElementProxy
+{
+    public ElementProxy(Element element)
+    {
+        this.Element = element;
+    }
+    public Element Element { get; private set; }
+
+    public Matrix4x4 ModelTransform;
+
+}
 public class Element
 {
     public uint VertexArrayObjectIndex {  get; private set; }
