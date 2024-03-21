@@ -8,17 +8,17 @@ namespace Spark.Renderers;
 
 public class ForwardRenderer : IRenderer
 {
-    List<ElementProxy> NeedRenderStaticMeshs = new List<ElementProxy>();
-    List<ElementProxy> OpaqueStaticMeshs = new List<ElementProxy>();
-    List<ElementProxy> MaskedStaticMeshs = new List<ElementProxy>();
-    List<ElementProxy> TranslucentStaticMeshs = new List<ElementProxy>();
+    readonly List<ElementProxy> NeedRenderStaticMeshs = new();
+    readonly List<ElementProxy> OpaqueStaticMeshs = new();
+    readonly List<ElementProxy> MaskedStaticMeshs = new();
+    readonly List<ElementProxy> TranslucentStaticMeshs = new();
     
     Shader? PreZMaskedShader = null;
     Shader? PreZOpaqueShader = null;
 #if DEBUG
-    GLDebugGroup PreZGroup = new GLDebugGroup("PreZ Pass");
-    GLDebugGroup OpaqueGroup = new GLDebugGroup("Opaque Pass");
-    GLDebugGroup MaskedGroup = new GLDebugGroup("Masked Pass");
+    readonly GLDebugGroup PreZGroup = new("PreZ Pass");
+    readonly GLDebugGroup OpaqueGroup = new("Opaque Pass");
+    readonly GLDebugGroup MaskedGroup = new("Masked Pass");
 #endif
     public void Render(GL gl, CameraActor Camera)
     {
