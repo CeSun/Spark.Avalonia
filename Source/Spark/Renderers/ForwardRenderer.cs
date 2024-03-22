@@ -8,11 +8,22 @@ namespace Spark.Renderers;
 
 public class ForwardRenderer : IRenderer
 {
+    RenderFeatures RenderFeatures;
+
+    public ForwardRenderer(RenderFeatures renderFeatures)
+    {
+        this.RenderFeatures = renderFeatures;
+    }
+
     readonly List<ElementProxy> NeedRenderStaticMeshs = new();
     readonly List<ElementProxy> OpaqueStaticMeshs = new();
     readonly List<ElementProxy> MaskedStaticMeshs = new();
     readonly List<ElementProxy> TranslucentStaticMeshs = new();
-    
+
+    readonly List<ElementProxy> LambertStaticMeshs = new();
+    readonly List<ElementProxy> BlinnPhongStaticMeshs = new();
+
+
     Shader? PreZMaskedShader = null;
     Shader? PreZOpaqueShader = null;
 #if DEBUG
@@ -25,36 +36,44 @@ public class ForwardRenderer : IRenderer
         LightShadowMapPass(gl);
         using (Camera.RenderTarget.Use(gl))
         {
-            NeedRenderStaticMeshs.Clear();
-            Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
-            Filter();
+            Filter(Camera);
             Clear(gl, Camera);
-            PreZPass(gl, Camera);
+            if (RenderFeatures.PreZ == true)
+            {
+                PreZPass(gl, Camera);
+            }
+
         }
     }
 
-    private void Filter()
+    private void Filter(CameraActor Camera)
     {
         OpaqueStaticMeshs.Clear();
         MaskedStaticMeshs.Clear();
         OpaqueStaticMeshs.Clear();
+        LambertStaticMeshs.Clear();
+        BlinnPhongStaticMeshs.Clear();
+        NeedRenderStaticMeshs.Clear();
+        Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
         foreach (var proxy in NeedRenderStaticMeshs)
         {
             var element = proxy.Element;
             if (element.Material == null)
                 continue;
+
+            // 混合模式
             if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Opaque)
-            {
                 OpaqueStaticMeshs.Add(proxy);
-            }
             else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Masked)
-            {
                 MaskedStaticMeshs.Add(proxy);
-            }
             else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Translucent)
-            {
                 TranslucentStaticMeshs.Add(proxy);
-            }
+
+            // 光源模型
+            if (element.Material.ShaderModel == Avalonia.Assets.ShaderModel.Lambert)
+                LambertStaticMeshs.Add(proxy);
+            else if (element.Material.ShaderModel == Avalonia.Assets.ShaderModel.BlinnPhong)
+                BlinnPhongStaticMeshs.Add(proxy);
         }
     }
 
@@ -106,6 +125,7 @@ public class ForwardRenderer : IRenderer
             using (MaskedGroup.PushGroup(gl))
 #endif
             {
+                gl.Enable(EnableCap.AlphaTest);
                 using (PreZMaskedShader!.Using(gl))
                 {
                     PreZMaskedShader.SetMatrix("Projection", Camera.ProjectTransform);

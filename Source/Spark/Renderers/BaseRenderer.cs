@@ -11,6 +11,11 @@ public interface IRenderer
 
 }
 
+public class RenderFeatures
+{
+    public bool PreZ { get; set; } = false;
+}
+
 public class GLDebugGroup : IDisposable
 {
     public string GroupName;
