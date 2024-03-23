@@ -197,7 +197,7 @@ InsertCurrentNode:
             }
         }
     }
-    public void SphereCulling<T>(List<T> Actors, Sphere sphere) where T : Actor
+    public void SphereCulling<T>(List<T> Actors, Sphere sphere)
     {
         if (sphere.TestBox(CurrentBox) == false)
             return;
@@ -268,7 +268,7 @@ public class BoundingBox : BaseBounding
 public class BoundingSphere : BaseBounding
 {
     public Sphere Sphere;
-    public BoundingSphere(Actor Actor) : base(Actor)
+    public BoundingSphere(object Object) : base(Object)
     {
 
     }

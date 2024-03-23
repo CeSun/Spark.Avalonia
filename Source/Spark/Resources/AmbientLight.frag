@@ -1,18 +1,19 @@
 ﻿#version 300 es
 precision mediump float;
 
-#ifdef _BLENDMODE_MASKED_ 
+out vec4 glColor;
+uniform float AmbientStrength;
+
 uniform sampler2D BaseColor;
 in vec2 OutTexCoord;
-#endif
-
 
 
 void main()
 {
-#ifdef _BLENDMODE_MASKED_ 
 	vec4 BaseColor = texture(BaseColor, OutTexCoord);
+#ifndef _PREZ_ 
 	if (BaseColor.a <= 0.0)
 		discard;
 #endif
+	glColor = BaseColor * AmbientStrength;
 }

@@ -98,4 +98,9 @@ public class StaticMeshActor : Actor
         UpdateOctree();
     }
 
+    public override void Uninitialize()
+    {
+        RemoveFromOctree();
+        base.Uninitialize();
+    }
 }

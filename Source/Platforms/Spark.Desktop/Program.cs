@@ -5,6 +5,8 @@ using Spark.Assets;
 using Spark.Avalonia;
 using Spark.Avalonia.Actors;
 using Spark.Importer;
+using Spark.Util;
+using System.Drawing;
 using System.Numerics;
 
 var options = WindowOptions.Default with { 
@@ -18,16 +20,25 @@ var window = Window.Create(options);
 
 var Engine = new Engine();
 GL? gl = null;
+
+// 创建一个摄像机
+var camera1 = Engine.CreateActor<CameraActor>();
+camera1.ClearColor = Color.LightGray;
+// 创建并加载一个模型
+var sma = Engine.CreateActor<StaticMeshActor>();
 StaticMesh mesh = new StaticMesh();
 using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
 {
-    mesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
+    sma.StaticMesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
 }
-var sma = Engine.CreateActor<StaticMeshActor>();
-sma.StaticMesh = mesh;
-var camera1 = Engine.CreateActor<CameraActor>();
-sma.Position = camera1.ForwardVector * 20 + camera1.RightVector * 0 + camera1.UpVector * 0;
-sma.Scale = new Vector3(0.1f);
+sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
+sma.Scale = Vector3.One * 0.1f;
+// 创建一个定向光源
+var light1 = Engine.CreateActor<DirectionLightActor>();
+light1.LightColor = Color.LightPink;
+light1.LightColorVec3 /= 2;
+light1.Rotation = Quaternion.CreateFromYawPitchRoll(0, -30f.DegreeToRadians(), 0.0f);
+
 window.Resize += size =>
 {
     Engine.DefaultRenderTarget.Width = size.X;

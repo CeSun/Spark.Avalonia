@@ -136,13 +136,7 @@ public class Shader : IDisposable
 #endif
         gl.UniformMatrix4(location, 1, false, (float*)&value);
     }
-    public void Use()
-    {
-        if (gl == null)
-            return;
-        gl.UseProgram(ProgramId);
-    }
-    public Shader Using(GL gl)
+    public Shader Use(GL gl)
     {
         this.gl = gl;
         gl.UseProgram(ProgramId);

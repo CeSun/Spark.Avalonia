@@ -13,9 +13,7 @@
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-	<StackPanel>
-		<TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-		<as:SparkCanvas Width="300" Height="200"></as:SparkCanvas>
-	</StackPanel>
+
+	<as:SparkCanvas  OnBeginPlay="OnWorldBeginPlay"></as:SparkCanvas>
 
 </UserControl>

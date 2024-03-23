@@ -1,4 +1,6 @@
-﻿using Avalonia.Interactivity;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Silk.NET.OpenGLES;
@@ -72,5 +74,12 @@ public class SparkCanvas : OpenGlControlBase
         RoutedEventArgs args = new RoutedEventArgs(EndPlayEvent);
         RaiseEvent(args);
         Engine.Uninitialize(GL.GetApi(gl.GetProcAddress));
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        Engine.DefaultRenderTarget.Width = (int)(Bounds.Width * VisualRoot!.RenderScaling);
+        Engine.DefaultRenderTarget.Height = (int)(Bounds.Height * VisualRoot!.RenderScaling);
     }
 }

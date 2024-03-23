@@ -21,7 +21,7 @@ public static class Importer
     {
         var result = ImageResult.FromStream(stream);
         var texture = ImportTexture(result);
-        engine.RenderMethods.Add(texture.SetupRender);
+        engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
@@ -29,7 +29,7 @@ public static class Importer
     {
         var result = ImageResult.FromMemory(bytes);
         var texture = ImportTexture(result);
-        engine.RenderMethods.Add(texture.SetupRender);
+        engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
@@ -59,9 +59,9 @@ public static class Importer
         var staticMesh = new StaticMesh();
         foreach(var glMeshes in model.LogicalMeshes)
         {
-            Element element = new Element(); 
             foreach(var mesh in glMeshes.Primitives)
             {
+                Element element = new Element();
                 // 顶点
                 var Position = mesh.GetVertexAccessor("POSITION").AsVector3Array();
                 var Normal = mesh.GetVertexAccessor("NORMAL").AsVector3Array();
@@ -105,11 +105,12 @@ public static class Importer
                         }
                     }
                 }
+                element.SetupBTN();
+                element.SetupConvexHull();
+                engine.AddRenderTask(element.SetupRender);
+                staticMesh.Elements.Add(element);
             }
-            element.SetupBTN();
-            element.SetupConvexHull();
-            engine.RenderMethods.Add(element.SetupRender);
-            staticMesh.Elements.Add(element);
+            
         }
         return staticMesh;
     }

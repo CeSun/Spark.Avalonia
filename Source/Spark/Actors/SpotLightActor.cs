@@ -12,4 +12,6 @@ public class SpotLightActor : BaseLightActor
     public float InteriorAngle { get; set; }
     public float ExteriorAngle { get; set; }
 
+    public float Distance { get; set; }
+
 }

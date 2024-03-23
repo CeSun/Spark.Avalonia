@@ -1,4 +1,5 @@
 ﻿using Silk.NET.OpenGLES;
+using Spark.Actors;
 using Spark.Avalonia.Actors;
 using Spark.Avalonia.Renderers;
 using Spark.Renderers;
@@ -16,14 +17,21 @@ namespace Spark.Avalonia;
 public class Engine
 {
     IRenderer Renderer;
-    public List<Action<GL>> RenderMethods = new List<Action<GL>>(); 
+    private readonly List<Action<GL>> RenderMethods = new();
+    private readonly List<Action<GL>> TmpRenderMethods = new();
     public BaseRenderTarget DefaultRenderTarget { get; set; }
+
+    private readonly List<DirectionLightActor> _DirectionLightActors = new();
+    public IReadOnlyList<DirectionLightActor> DirectionLightActors => _DirectionLightActors;
+
+    private readonly List<PointLightActor> _PointLightActors = new();
+    public IReadOnlyList<PointLightActor> PointLightActors => _PointLightActors;
 
     public Octree Octree { get; private set; }
     public Engine() 
     {
         Octree = new Octree();
-        Renderer = new ForwardRenderer();
+        Renderer = new ForwardRenderer(new RenderFeatures { PreZ = true });
         DefaultRenderTarget = new CanvasRenderTarget();
     }
 
@@ -52,6 +60,14 @@ public class Engine
         {
             CameraActors.Add(camera);
         }
+        else if (actor is DirectionLightActor directionLight)
+        {
+             _DirectionLightActors.Add(directionLight);
+        }
+        else if (actor is PointLightActor pointLight)
+        {
+            _PointLightActors.Add(pointLight);
+        }
         _Actors.Add(actor);
     }
 
@@ -60,6 +76,14 @@ public class Engine
         if (actor is CameraActor cam)
         {
             CameraActors.Remove(cam);
+        }
+        else if (actor is DirectionLightActor directionLight)
+        {
+            _DirectionLightActors.Remove(directionLight);
+        }
+        else if (actor is PointLightActor pointLightActor)
+        {
+            _PointLightActors.Remove(pointLightActor);
         }
         _Actors.Remove(actor);
     }
@@ -73,10 +97,22 @@ public class Engine
         _Actors.ToList().ForEach(actor => actor.Update(DeltaTime));
     }
 
+    public void AddRenderTask(Action<GL> action)
+    {
+        lock(RenderMethods)
+        {
+            RenderMethods.Add(action);
+        }
+    }
     public void Render(GL gl)
     {
-        RenderMethods.ForEach(m => m(gl));
-        RenderMethods.Clear();
+        TmpRenderMethods.Clear();
+        lock(RenderMethods)
+        {
+            TmpRenderMethods.AddRange(RenderMethods);
+            RenderMethods.Clear();
+        }
+        TmpRenderMethods.ForEach(m => m(gl));
         CameraActors.Sort((left, right) =>
         {
             return left.Order.CompareTo(right.Order);
