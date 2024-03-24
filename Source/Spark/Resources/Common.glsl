@@ -76,8 +76,10 @@ vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
 	vec3 DiffuseLight = Diffuse * passToFrag.LightColor * BaseColor.xyz;
 	// ¾µÃæ¹â
 	vec3 HalfVector = normalize(LightDirection + CameraDirection);
+#ifndef _SHADERMODEL_LAMBERT_
 	float Specular = pow(max(dot(Normal, HalfVector), 0.0), 32.0);
 	vec3 SpecularLight = Specular * BaseColor.xyz * passToFrag.LightColor;
+#endif
 	float factor = 1.0f;
 #ifdef _POINTLIGHT_
 	float Distance = length(passToFrag.LightTangentPosition - passToFrag.TangentPosition);
@@ -85,14 +87,16 @@ vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
 #endif
 #ifdef _SPOTLIGHT_
 	float theta = dot(LightDirection, normalize(-1.0 * passToFrag.LightTangentDirection));
-	if (theta < passToFrag.InteriorCosine)
-	{
-		factor = 0.0;
-	}
-	else
-	{
-		factor = 1.0;
-	}
+	float Epsilon = passToFrag.InteriorCosine - passToFrag.ExteriorCosine;
+	factor = clamp((theta - passToFrag.ExteriorCosine) / Epsilon, 0.0, 1.0);
+
 #endif
+#ifdef _SHADERMODEL_BLINNPHONG_
 	return vec4((DiffuseLight + SpecularLight) * factor, BaseColor.a);
+#endif
+
+#ifdef _SHADERMODEL_LAMBERT_
+	return vec4(DiffuseLight * factor, BaseColor.a);
+#endif
+
 }

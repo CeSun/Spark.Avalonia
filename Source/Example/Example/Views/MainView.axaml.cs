@@ -33,18 +33,17 @@ public partial class MainView : UserControl
         StaticMesh mesh = new StaticMesh();
         using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
         {
-            sma.StaticMesh = await Task.Run( () => Engine.ImportStaticMeshFromGLB(sr.BaseStream));
+            sma.StaticMesh = await Task.Run(() => Engine.ImportStaticMeshFromGLB(sr.BaseStream));
+            sma.StaticMesh.Elements.ForEach(element => element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert);
         }
-        sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50 ;
+        sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
         // 创建一个定向光源
-        var light1 = Engine.CreateActor<DirectionLightActor>();
+        var light1 = Engine.CreateActor<SpotLightActor>();
         light1.LightColor = Color.LightPink;
-        light1.LightColorVec3 /= 2;
-        light1.Rotation = Quaternion.CreateFromYawPitchRoll(0, -30f.DegreeToRadians(), 0.0f);
-        
-        var light2 = Engine.CreateActor<PointLightActor>();
-        light2.LightColor = Color.Green;
-        light2.AttenuationRatius = 10;
-        light2.Position = camera1.ForwardVector * 40 + camera1.UpVector * 10;
+        light1.LightColorVec3 /= 3;
+        light1.InteriorAngle = 5;
+        light1.ExteriorAngle = 10;
+
+        light1.Rotation = Quaternion.CreateFromYawPitchRoll(0, 0f.DegreeToRadians(), 0);
     }
 }

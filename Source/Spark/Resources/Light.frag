@@ -6,20 +6,18 @@ out vec4 glColor;
 
 in PassToFrag passToFrag;
 
-#ifdef _SHADERMODEL_BLINNPHONG_
 uniform	sampler2D BaseColorTexture;
 uniform	sampler2D NormalTexture;
-#endif
 
 void main()
 {
 	vec4 BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
+	vec3 Normal = texture(NormalTexture, passToFrag.TexCoord).xyz;
+	Normal = normalize(Normal * 2.0 - 1.0);
 #ifndef _PREZ_
 	if (BaseColor.a <= 0.1)
 		discard;
 #endif
 
-#ifdef _SHADERMODEL_BLINNPHONG_
-		glColor = BlinnPhongShading(BaseColor, passToFrag.Normal, passToFrag);
-#endif
+	glColor = BlinnPhongShading(BaseColor, Normal, passToFrag);
 }

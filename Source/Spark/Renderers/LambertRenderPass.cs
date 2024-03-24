@@ -12,16 +12,16 @@ using System.Threading.Tasks;
 
 namespace Spark.Renderers;
 
-public class BlinnPhongRenderPass : ShaderModelPass
+public class LambertRenderPass : ShaderModelPass
 {
-    public override ShaderModel ShaderModel => ShaderModel.BlinnPhong;
+    public override ShaderModel ShaderModel => ShaderModel.Lambert;
 
     Shader? AmbientLightShader = null;
     public override void Initialize(GL gl)
     {
-        DirectionLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_DIRECTIONLIGHT_", "_PREZ_" });
-        PointLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_POINTLIGHT_", "_PREZ_" });
-        SpotLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_SPOTLIGHT_", "_PREZ_" });
+        DirectionLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_LAMBERT_", "_DIRECTIONLIGHT_", "_PREZ_" });
+        PointLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_LAMBERT_", "_POINTLIGHT_", "_PREZ_" });
+        SpotLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_LAMBERT_", "_SPOTLIGHT_", "_PREZ_" });
         AmbientLightShader = gl.CreateShader("PreZ.vert", "AmbientLight.frag", new() { "_SHADERMODEL_BLINNPHONG_LAMBERT_" });
     }
 
@@ -51,7 +51,7 @@ public class BlinnPhongRenderPass : ShaderModelPass
     public override unsafe void RenderStaticMesh(GL gl, Shader Shader, CameraActor Camera, ElementProxy proxy)
     {
         Shader!.SetMatrix("Model", proxy.ModelTransform);
-        Shader!.SetInt("BaseColorTexture", 0);
+        Shader!.SetInt("BaseColor", 0);
         gl.ActiveTexture(GLEnum.Texture0);
         gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
 

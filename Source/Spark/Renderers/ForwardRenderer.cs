@@ -17,6 +17,7 @@ public class ForwardRenderer : BaseRenderer
     {
         this.RenderFeatures = renderFeatures;
         this.ShaderModelPassMap.Add(ShaderModel.BlinnPhong, new BlinnPhongRenderPass());
+        this.ShaderModelPassMap.Add(ShaderModel.Lambert, new LambertRenderPass());
     }
 
 

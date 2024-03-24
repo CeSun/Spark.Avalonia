@@ -30,13 +30,13 @@ StaticMesh mesh = new StaticMesh();
 using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
 {
     sma.StaticMesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
+    sma.StaticMesh.Elements.ForEach(element => element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.BlinnPhong);
 }
 sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
 // 创建一个定向光源
 var light1 = Engine.CreateActor<SpotLightActor>();
 light1.LightColor = Color.LightPink;
-
-light1.InteriorAngle = 10;
+light1.InteriorAngle = 5;
 light1.ExteriorAngle = 10;
 window.Resize += size =>
 {
