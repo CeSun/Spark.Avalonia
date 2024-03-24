@@ -32,13 +32,12 @@ using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\
     sma.StaticMesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
 }
 sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
-sma.Scale = Vector3.One * 0.1f;
 // 创建一个定向光源
-var light1 = Engine.CreateActor<DirectionLightActor>();
+var light1 = Engine.CreateActor<SpotLightActor>();
 light1.LightColor = Color.LightPink;
-light1.LightColorVec3 /= 2;
-light1.Rotation = Quaternion.CreateFromYawPitchRoll(0, -30f.DegreeToRadians(), 0.0f);
 
+light1.InteriorAngle = 10;
+light1.ExteriorAngle = 10;
 window.Resize += size =>
 {
     Engine.DefaultRenderTarget.Width = size.X;

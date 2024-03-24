@@ -1,14 +1,79 @@
 ﻿using Silk.NET.OpenGLES;
+using Spark.Actors;
+using Spark.Assets;
 using Spark.Avalonia.Actors;
+using Spark.Avalonia.Assets;
+using Spark.Renderers;
 
 namespace Spark.Avalonia.Renderers;
 
-public interface IRenderer
+public abstract class BaseRenderer
 {
-    void Initialize(GL gl);
-    void Render(GL gl, CameraActor Camera);
-    void Uninitialize(GL gl);
+    public readonly List<ElementProxy> NeedRenderStaticMeshs = new();
+    public readonly List<PointLightActor> PointLightActors = new();
+    public readonly List<SpotLightActor> SpotLightActors = new();
+    public readonly List<ElementProxy> OpaqueStaticMeshs = new();
+    public readonly List<ElementProxy> MaskedStaticMeshs = new();
+    public readonly List<ElementProxy> TranslucentStaticMeshs = new();
 
+    public Dictionary<ShaderModel, ShaderModelPass> ShaderModelPassMap = new Dictionary<ShaderModel, ShaderModelPass>();
+    public virtual void Initialize(GL gl)
+    {
+        foreach(var (_, pass) in ShaderModelPassMap)
+        {
+            pass.Initialize(gl);
+        }
+    }
+    public virtual void Render(GL gl, CameraActor Camera)
+    {
+        Filter(Camera);
+    }
+    public virtual void Uninitialize(GL gl)
+    {
+        foreach (var (_, pass) in ShaderModelPassMap)
+        {
+            pass.Uninitialize(gl);
+        }
+    }
+
+    private void Filter(CameraActor Camera)
+    {
+        NeedRenderStaticMeshs.Clear();
+        PointLightActors.Clear();
+        OpaqueStaticMeshs.Clear();
+        MaskedStaticMeshs.Clear();
+        TranslucentStaticMeshs.Clear();
+        SpotLightActors.Clear();
+        foreach (var (_, pass) in ShaderModelPassMap)
+        {
+            pass.StaticMeshes.Clear();
+        }
+
+        Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
+        Camera.Engine.Octree.FrustumCulling(PointLightActors, Camera.GetPlanes());
+        Camera.Engine.Octree.FrustumCulling(SpotLightActors, Camera.GetPlanes());
+        foreach (var proxy in NeedRenderStaticMeshs)
+        {
+            var element = proxy.Element;
+            if (element.Material == null)
+                continue;
+            // 混合模式
+            if (element.Material.BlendMode == BlendMode.Opaque)
+                OpaqueStaticMeshs.Add(proxy);
+            else if (element.Material.BlendMode == BlendMode.Masked)
+                MaskedStaticMeshs.Add(proxy);
+            else if (element.Material.BlendMode == BlendMode.Translucent)
+                TranslucentStaticMeshs.Add(proxy);
+
+            if (ShaderModelPassMap.TryGetValue(element.Material.ShaderModel, out var pass))
+            {
+                if (element.Material.BlendMode == BlendMode.Translucent)
+                    pass.TranslucentStaticMeshs.Add(proxy);
+                else
+                    pass.StaticMeshes.Add(proxy);
+            }
+        }
+    }
 }
 
 public class RenderFeatures

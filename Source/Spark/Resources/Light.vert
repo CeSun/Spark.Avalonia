@@ -42,6 +42,15 @@ void main()
 	passToFrag.AttenuationFactor = lightInfo.AttenuationFactor;
 
 #endif
+
+#ifdef _SPOTLIGHT_
+	passToFrag.LightPosition = lightInfo.LightPosition;
+	passToFrag.LightTangentPosition = TBN * lightInfo.LightPosition;
+	passToFrag.Distance = lightInfo.Distance;
+	passToFrag.InteriorCosine = lightInfo.InteriorCosine;
+	passToFrag.ExteriorCosine = lightInfo.ExteriorCosine;
+	passToFrag.LightTangentDirection = TBN * lightInfo.Direction;
+#endif
 		
 	gl_Position = passToFrag.Position;
 }

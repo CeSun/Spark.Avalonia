@@ -27,6 +27,14 @@ struct PassToFrag
 	vec3 LightTangentPosition;
 	float AttenuationFactor;
 #endif
+#ifdef _SPOTLIGHT_
+	vec3 LightPosition;
+	vec3 LightTangentPosition;
+	float Distance;
+	float InteriorCosine;
+	float ExteriorCosine;
+	vec3 LightTangentDirection;
+#endif
 };
 
 
@@ -42,6 +50,14 @@ struct LightInfo
 	vec3 LightPosition;
 	float AttenuationFactor;
 #endif
+
+#ifdef _SPOTLIGHT_
+	vec3 Direction;
+	vec3 LightPosition;
+	float Distance;
+	float InteriorCosine;
+	float ExteriorCosine;
+#endif
 };
 
 vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
@@ -50,7 +66,6 @@ vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
 #ifdef _DIRECTIONLIGHT_
 	vec3 LightDirection = vec3(-1.0) * passToFrag.LightTangentDirection;
 #else
-
 	vec3 LightDirection = normalize(passToFrag.LightTangentPosition - passToFrag.TangentPosition);
 #endif
 	// ÉãÏñ»ú·½Ïò
@@ -66,8 +81,18 @@ vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
 	float factor = 1.0f;
 #ifdef _POINTLIGHT_
 	float Distance = length(passToFrag.LightTangentPosition - passToFrag.TangentPosition);
-	factor =   passToFrag.AttenuationFactor / (Distance * Distance);
-
+	factor = passToFrag.AttenuationFactor / (Distance * Distance);
+#endif
+#ifdef _SPOTLIGHT_
+	float theta = dot(LightDirection, normalize(-1.0 * passToFrag.LightTangentDirection));
+	if (theta < passToFrag.InteriorCosine)
+	{
+		factor = 0.0;
+	}
+	else
+	{
+		factor = 1.0;
+	}
 #endif
 	return vec4((DiffuseLight + SpecularLight) * factor, BaseColor.a);
 }

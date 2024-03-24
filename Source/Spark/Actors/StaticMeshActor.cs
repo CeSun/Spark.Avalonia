@@ -42,9 +42,19 @@ public class StaticMeshActor : Actor
         {
             var proxy = new ElementProxy(element);
             var box = new BoundingBox(proxy);
+            int i = 0;
             foreach(var p in element.ConvexHull)
             {
-                box.Box += Vector3.Transform(p, matrix);
+                if (i == 0)
+                {
+                    box.Box.MinPoint = Vector3.Transform(p, matrix);
+                    box.Box.MinPoint = box.Box.MaxPoint;
+                }
+                else
+                {
+                    box.Box += Vector3.Transform(p, matrix);
+                }
+                i++;
             }
             BoundingBoxes.Add(box);
             proxy.ModelTransform = matrix;
@@ -84,9 +94,19 @@ public class StaticMeshActor : Actor
             var Proxy = (ElementProxy)box.Object;
             box.Box.MinPoint = Vector3.Zero;
             box.Box.MaxPoint = Vector3.Zero;
+            int i = 0;
             foreach(var p in Proxy.Element.ConvexHull)
             {
-                box.Box += Vector3.Transform(p, matrix);
+                if (i == 0)
+                {
+                    box.Box.MinPoint = Vector3.Transform(p, matrix);
+                    box.Box.MinPoint = box.Box.MaxPoint;
+                }
+                else
+                {
+                    box.Box += Vector3.Transform(p, matrix);
+                }
+                i++;
             }
             Proxy.ModelTransform = matrix;
         }

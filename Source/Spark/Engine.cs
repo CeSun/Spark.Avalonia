@@ -16,7 +16,7 @@ namespace Spark.Avalonia;
 
 public class Engine
 {
-    IRenderer Renderer;
+    BaseRenderer Renderer;
     private readonly List<Action<GL>> RenderMethods = new();
     private readonly List<Action<GL>> TmpRenderMethods = new();
     public BaseRenderTarget DefaultRenderTarget { get; set; }

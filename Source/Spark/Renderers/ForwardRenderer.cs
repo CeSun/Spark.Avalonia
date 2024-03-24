@@ -10,28 +10,21 @@ using System.Xml.Linq;
 
 namespace Spark.Renderers;
 
-public class ForwardRenderer : IRenderer
+public class ForwardRenderer : BaseRenderer
 {
     RenderFeatures RenderFeatures;
-    Dictionary<ShaderModel ,ShaderModelPass> ShaderModelPassMap = new ();
     public ForwardRenderer(RenderFeatures renderFeatures)
     {
         this.RenderFeatures = renderFeatures;
+        this.ShaderModelPassMap.Add(ShaderModel.BlinnPhong, new BlinnPhongRenderPass());
     }
 
-    readonly List<ElementProxy> NeedRenderStaticMeshs = new();
-    readonly List<ElementProxy> OpaqueStaticMeshs = new();
-    readonly List<ElementProxy> MaskedStaticMeshs = new();
-    readonly List<ElementProxy> TranslucentStaticMeshs = new();
 
     readonly List<ElementProxy> LambertStaticMeshs = new();
     readonly List<ElementProxy> BlinnPhongStaticMeshs = new();
-    readonly List<PointLightActor> PointLightActors = new();
 
     Shader? PreZMaskedShader = null;
     Shader? PreZOpaqueShader = null;
-    Shader? BlinnPhongDirectionLightShader = null;
-    Shader? BlinnPhongPointLightShader = null;
     Shader? AmbientLightShader = null;
 #if DEBUG
     readonly GLDebugGroup PreZGroup = new("PreZ Pass");
@@ -40,63 +33,24 @@ public class ForwardRenderer : IRenderer
     readonly GLDebugGroup BasePassGroup = new("Base Pass");
     readonly GLDebugGroup DirectionLightGroup = new("DirectionLight Pass");
     readonly GLDebugGroup PointLightGroup = new("PointLight Pass");
-    readonly GLDebugGroup AmbientLightGroup = new("AmbientLight Pass");
+    readonly GLDebugGroup SpotLightGroup = new("SpotLight Pass");
 #endif
-    public void Render(GL gl, CameraActor Camera)
+    public override void Render(GL gl, CameraActor Camera)
     {
-        LightShadowMapPass(gl);
+        base.Render(gl, Camera);
         using (Camera.RenderTarget.Use(gl))
         {
-            Filter(Camera);
             Clear(gl, Camera);
-            if (RenderFeatures.PreZ == true)
-            {
-                PreZPass(gl, Camera);
-            }
+            PreZPass(gl, Camera);
             BasePass(gl, Camera);
 
         }
     }
 
-    private void Filter(CameraActor Camera)
-    {
-        OpaqueStaticMeshs.Clear();
-        MaskedStaticMeshs.Clear();
-        OpaqueStaticMeshs.Clear();
-        LambertStaticMeshs.Clear();
-        BlinnPhongStaticMeshs.Clear();
-        NeedRenderStaticMeshs.Clear();
-        PointLightActors.Clear();
-        Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
-        Camera.Engine.Octree.FrustumCulling(PointLightActors, Camera.GetPlanes());
-        foreach (var proxy in NeedRenderStaticMeshs)
-        {
-            var element = proxy.Element;
-            if (element.Material == null)
-                continue;
-
-            // 混合模式
-            if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Opaque)
-                OpaqueStaticMeshs.Add(proxy);
-            else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Masked)
-                MaskedStaticMeshs.Add(proxy);
-            else if (element.Material.BlendMode == Avalonia.Assets.BlendMode.Translucent)
-                TranslucentStaticMeshs.Add(proxy);
-
-            // 光源模型
-            if (element.Material.ShaderModel == Avalonia.Assets.ShaderModel.Lambert)
-                LambertStaticMeshs.Add(proxy);
-            else if (element.Material.ShaderModel == Avalonia.Assets.ShaderModel.BlinnPhong)
-                BlinnPhongStaticMeshs.Add(proxy);
-        }
-    }
 
     private void Clear(GL gl, CameraActor Camera)
     {
-        if (RenderFeatures.PreZ)
-        {
-            gl.DepthMask(true);
-        }
+        gl.DepthMask(true);
         ClearBufferMask ClearFlag = ClearBufferMask.None;
         if ((Camera.ClearFlag & CameraClearFlag.DepthFlag) == CameraClearFlag.DepthFlag)
             ClearFlag |= ClearBufferMask.DepthBufferBit;
@@ -111,10 +65,6 @@ public class ForwardRenderer : IRenderer
         if ((Camera.ClearFlag & CameraClearFlag.Skybox) == CameraClearFlag.Skybox)
             RenderSkybox(gl, Camera);
     }
-    private void LightShadowMapPass(GL gl)
-    {
-
-    }
     public unsafe void PreZPass(GL gl, CameraActor Camera)
     {
 #if DEBUG
@@ -123,7 +73,6 @@ public class ForwardRenderer : IRenderer
         gl.Disable(EnableCap.Blend);
         gl.Enable(EnableCap.DepthTest);
         gl.DepthFunc(DepthFunction.Less);
-        gl.DepthMask(true);
 #if DEBUG
         using (OpaqueGroup.PushGroup(gl))
 #endif
@@ -180,15 +129,22 @@ public class ForwardRenderer : IRenderer
         gl.DepthFunc(DepthFunction.Equal);
         gl.Enable(EnableCap.DepthTest);
         gl.Disable(EnableCap.Blend);
-
-        AmbientLight(gl, Camera);
+        foreach(var (_, pass) in ShaderModelPassMap)
+        {
+            pass.PreRender(gl, Camera);
+        }
         gl.BlendEquation(GLEnum.FuncAdd);
         gl.BlendFunc(GLEnum.One, GLEnum.One);
         gl.Enable(EnableCap.Blend);
 
         DirectionLightPass(gl, Camera);
         PointLightPass(gl, Camera);
+        SpotLightPass(gl, Camera);
 
+        foreach (var (_, pass) in ShaderModelPassMap)
+        {
+            pass.PostRender(gl, Camera);
+        }
     }
 
     public unsafe void DirectionLightPass(GL gl, CameraActor Camera)
@@ -198,29 +154,43 @@ public class ForwardRenderer : IRenderer
 #endif
         foreach (var directionLight in Camera.Engine.DirectionLightActors)
         {
-            using (BlinnPhongDirectionLightShader!.Use(gl))
+            foreach (var (_, pass) in ShaderModelPassMap)
             {
-                BlinnPhongDirectionLightShader!.SetVector3("lightInfo.CameraPosition", Camera.WorldPosition);
-                BlinnPhongDirectionLightShader!.SetVector3("lightInfo.Color", directionLight.LightColorVec3);
-                BlinnPhongDirectionLightShader!.SetVector3("lightInfo.Direction", directionLight.ForwardVector);
-
-                BlinnPhongDirectionLightShader!.SetMatrix("Projection", Camera.ProjectTransform);
-                BlinnPhongDirectionLightShader!.SetMatrix("View", Camera.ViewTransform);
-                foreach (var proxy in BlinnPhongStaticMeshs)
+                using (pass.DirectionLightShader!.Use(gl))
                 {
-                    BlinnPhongDirectionLightShader!.SetMatrix("Model", proxy.ModelTransform);
-                    BlinnPhongDirectionLightShader!.SetInt("BaseColor", 0);
-                    gl.ActiveTexture(GLEnum.Texture0);
-                    gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
-                    gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
-                    gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
+                    pass.SetupDirectionLightInfo(gl, pass.DirectionLightShader, Camera, directionLight);
+                    foreach (var proxy in pass.StaticMeshes)
+                    {
+                        pass.RenderStaticMesh(gl, pass.DirectionLightShader, Camera, proxy);
+                    }
                 }
             }
         }
     }
 
-    readonly List<ElementProxy> tmpStaticMeshs = new();
-    readonly List<ElementProxy> tmpBlinnPhongStaticMesh = new();
+    public unsafe void SpotLightPass(GL gl, CameraActor Camera)
+    {
+#if DEBUG
+        using var _ = SpotLightGroup.PushGroup(gl);
+#endif
+        foreach (var spotLightActor in SpotLightActors)
+        {
+            foreach (var (_, pass) in ShaderModelPassMap)
+            {
+                using (pass.SpotLightShader!.Use(gl))
+                {
+                    pass.SetupSpotLightInfo(gl, pass.SpotLightShader, Camera, spotLightActor);
+                    foreach (var proxy in pass.StaticMeshes)
+                    {
+                        pass.RenderStaticMesh(gl, pass.SpotLightShader, Camera, proxy);
+                    }
+                }
+            }
+        }
+    }
+
+    List<ElementProxy> tmpStaticMeshs = new();
+    List<ElementProxy> tmpBlinnPhongStaticMesh = new();
     public unsafe void PointLightPass(GL gl, CameraActor Camera)
     {
 #if DEBUG
@@ -228,80 +198,42 @@ public class ForwardRenderer : IRenderer
 #endif
         foreach(var pointLight in PointLightActors)
         {
-
+            
             tmpStaticMeshs.Clear();
-            tmpBlinnPhongStaticMesh.Clear();
             Camera.Engine.Octree.SphereCulling(tmpStaticMeshs, pointLight.BoundingSphere.Sphere);
-            using (BlinnPhongPointLightShader!.Use(gl))
+            foreach (var (model, pass) in ShaderModelPassMap)
             {
-
-                BlinnPhongPointLightShader!.SetVector3("lightInfo.CameraPosition", Camera.WorldPosition);
-                BlinnPhongPointLightShader!.SetVector3("lightInfo.Color", pointLight.LightColorVec3);
-                BlinnPhongPointLightShader!.SetVector3("lightInfo.LightPosition", pointLight.WorldPosition);
-                BlinnPhongPointLightShader!.SetFloat("lightInfo.AttenuationFactor", pointLight.AttenuationFactor);
-                
-                BlinnPhongPointLightShader!.SetMatrix("Projection", Camera.ProjectTransform);
-                BlinnPhongPointLightShader!.SetMatrix("View", Camera.ViewTransform);
-                foreach (var proxy in tmpStaticMeshs)
+                using (pass.PointLightShader!.Use(gl))
                 {
-                    if (proxy.Element.Material == null)
-                        continue;
-                    if (proxy.Element.Material.ShaderModel != Avalonia.Assets.ShaderModel.BlinnPhong)
+                    pass.SetupPointLightInfo(gl, pass.PointLightShader, Camera, pointLight);
+                    tmpBlinnPhongStaticMesh.Clear();
+                    foreach (var proxy in pass.StaticMeshes)
                     {
-                        tmpBlinnPhongStaticMesh.Add(proxy);
-                        continue;
+                        if (proxy.Element.Material == null)
+                            continue;
+                        if (proxy.Element.Material.ShaderModel != model)
+                        {
+                            tmpBlinnPhongStaticMesh.Add(proxy);
+                            continue;
+                        }
+                        pass.RenderStaticMesh(gl, pass.PointLightShader, Camera, proxy);
                     }
-                    BlinnPhongPointLightShader!.SetMatrix("Model", proxy.ModelTransform);
-                    BlinnPhongPointLightShader!.SetInt("BaseColor", 0);
-                    gl.ActiveTexture(GLEnum.Texture0);
-                    gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
-                    gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
-                    gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
+                    var tmp = tmpStaticMeshs;
+                    tmpStaticMeshs = tmpBlinnPhongStaticMesh;
+                    tmpBlinnPhongStaticMesh = tmpStaticMeshs;
                 }
             }
         }
     }
 
-    public unsafe void AmbientLight(GL gl, CameraActor Camera)
+    public override void Initialize(GL gl)
     {
-#if DEBUG
-        using var _ = AmbientLightGroup.PushGroup(gl);
-#endif
-        using (AmbientLightShader!.Use(gl))
-        {
-            AmbientLightShader.SetFloat("AmbientStrength", 0.05f);
-            AmbientLightShader!.SetMatrix("Projection", Camera.ProjectTransform);
-            AmbientLightShader!.SetMatrix("View", Camera.ViewTransform);
-            foreach (var proxy in LambertStaticMeshs)
-            {
-                AmbientLightShader.SetMatrix("Model", proxy.ModelTransform);
-                AmbientLightShader.SetInt("BaseColor", 0);
-                gl.ActiveTexture(GLEnum.Texture0);
-                gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
-                gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
-                gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
-            }
-            foreach (var proxy in BlinnPhongStaticMeshs)
-            {
-                AmbientLightShader.SetMatrix("Model", proxy.ModelTransform);
-                AmbientLightShader.SetInt("BaseColor", 0);
-                gl.ActiveTexture(GLEnum.Texture0);
-                gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
-                gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
-                gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
-            }
-
-        }
-    }
-    public void Initialize(GL gl)
-    {
+        base.Initialize(gl);
         PreZMaskedShader = gl.CreateShader("PreZ.vert", "PreZ.frag", new() { "_BLENDMODE_MASKED_" });
         PreZOpaqueShader = gl.CreateShader("PreZ.vert", "PreZ.frag");
-        AmbientLightShader = gl.CreateShader("PreZ.vert", "AmbientLight.frag", new() { "_SHADERMODEL_BLINNPHONG_LAMBERT_" });
-        BlinnPhongDirectionLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_DIRECTIONLIGHT_", "_PREZ_" });
-        BlinnPhongPointLightShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_POINTLIGHT_", "_PREZ_" });
     }
-    public void Uninitialize(GL gl)
+    public override void Uninitialize(GL gl)
     {
+        base.Uninitialize(gl);
     }
 }
