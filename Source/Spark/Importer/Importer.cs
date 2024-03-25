@@ -66,7 +66,7 @@ public static class Importer
                 var Position = mesh.GetVertexAccessor("POSITION").AsVector3Array();
                 var Normal = mesh.GetVertexAccessor("NORMAL").AsVector3Array();
                 var TexCoord = mesh.GetVertexAccessor("TEXCOORD_0").AsVector2Array();
-                var Color = mesh.GetVertexAccessor("COLOR_0").AsColorArray();
+                var Color = mesh.GetVertexAccessor("COLOR_0")?.AsColorArray();
                 for (var i = 0; i < Position.Count; i++)
                 {
                     Vertex vertex = new Vertex() 
@@ -74,8 +74,11 @@ public static class Importer
                         Position = Position[i],
                         TexCoord = TexCoord[i],
                         Normal = Normal[i],
-                        Color = new Vector3(Color[i].X, Color[i].Y, Color[i].Z)
                     };
+                    if (Color != null)
+                    {
+                        vertex.Color = new Vector3(Color[i].X, Color[i].Y, Color[i].Z);
+                    }
 
                     element.Vertices.Add(vertex);
                 }
@@ -99,7 +102,7 @@ public static class Importer
                     {
                         element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray());
                         var channel = mesh.Material.FindChannel("Normal");
-                        if (channel != null)
+                        if (channel != null && channel.Value.Texture != null)
                         {
                             element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
                         }

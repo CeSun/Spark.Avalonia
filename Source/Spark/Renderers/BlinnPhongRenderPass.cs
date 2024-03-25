@@ -53,11 +53,17 @@ public class BlinnPhongRenderPass : ShaderModelPass
         Shader!.SetMatrix("Model", proxy.ModelTransform);
         Shader!.SetInt("BaseColorTexture", 0);
         gl.ActiveTexture(GLEnum.Texture0);
-        gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
+        if (proxy.Element.Material?.Diffuse != null)
+            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
+        else
+            gl.BindTexture(GLEnum.Texture2D, 0);
 
         Shader!.SetInt("NormalTexture", 1);
         gl.ActiveTexture(GLEnum.Texture1);
-        gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Normal!.TextureId);
+        if (proxy.Element.Material?.Normal != null)
+            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Normal!.TextureId);
+        else
+            gl.BindTexture(GLEnum.Texture2D, 0);
 
         gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
         gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);

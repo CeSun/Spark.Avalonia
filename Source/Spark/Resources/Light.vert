@@ -24,7 +24,7 @@ void main()
 	mat3 TBN = mat3(T, B, N);
 
 	passToFrag.Position = Projection * View * Model * vec4(Position, 1.0f);
-	passToFrag.Normal = Normal;
+	passToFrag.Normal = TBN * Normal;
 	passToFrag.Color = Color;
 	passToFrag.TexCoord = TexCoord;
 	passToFrag.TangentPosition = TBN * vec3(Model * vec4(Position, 1.0f));

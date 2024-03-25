@@ -14,7 +14,14 @@ void main()
 {
 	vec4 BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
 	vec3 Normal = texture(NormalTexture, passToFrag.TexCoord).xyz;
-	Normal = normalize(Normal * 2.0 - 1.0);
+	if (length(Normal) > 0.0)
+	{
+		Normal = normalize(Normal * 2.0 - 1.0);
+	}
+	else
+	{
+		Normal = passToFrag.Normal;
+	}
 #ifndef _PREZ_
 	if (BaseColor.a <= 0.1)
 		discard;
