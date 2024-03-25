@@ -13,7 +13,18 @@
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
     <vm:MainViewModel />
   </Design.DataContext>
-
-	<as:SparkCanvas  OnBeginPlay="OnWorldBeginPlay"></as:SparkCanvas>
+	<DockPanel>
+		<StackPanel DockPanel.Dock="Top">
+			<TextBlock FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" >
+				Hello Spark.Avalonia
+			</TextBlock>
+			<StackPanel Orientation="Horizontal">
+				<Button Content="人" Click="ChangePerson"></Button>
+				<Button Content="枪" Click="ChangeWpn"></Button>
+				<Button Content="沙发" Click="ChangeCube"></Button>
+			</StackPanel>
+		</StackPanel>
+		<as:SparkCanvas Width=""  OnBeginPlay="OnWorldBeginPlay"></as:SparkCanvas>
+	</DockPanel>
 
 </UserControl>

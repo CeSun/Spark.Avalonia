@@ -12,7 +12,11 @@
 
   
   <ItemGroup>
+    <None Remove="Assets\AK47.glb" />
+    <None Remove="Assets\cube.glb" />
+    <None Remove="Assets\flower.glb" />
     <None Remove="Assets\Jason.glb" />
+    <None Remove="Assets\sofa.glb" />
   </ItemGroup>
 
   <ItemGroup>
