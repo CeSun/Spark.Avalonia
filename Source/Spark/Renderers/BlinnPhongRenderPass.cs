@@ -65,9 +65,9 @@ public class BlinnPhongRenderPass : ShaderModelPass
 
     public override void SetupDirectionLightInfo(GL gl, Shader Shader, CameraActor Camera, DirectionLightActor DirectionLightActor)
     {
-        Shader!.SetVector3("lightInfo.CameraPosition", Camera.WorldPosition);
-        Shader!.SetVector3("lightInfo.Color", DirectionLightActor.LightColorVec3);
-        Shader!.SetVector3("lightInfo.Direction", DirectionLightActor.ForwardVector);
+        Shader!.SetVector3("Light.CameraPosition", Camera.WorldPosition);
+        Shader!.SetVector3("Light.Color", DirectionLightActor.LightColorVec3);
+        Shader!.SetVector3("Light.Direction", DirectionLightActor.ForwardVector);
 
         Shader!.SetMatrix("Projection", Camera.ProjectTransform);
         Shader!.SetMatrix("View", Camera.ViewTransform);
@@ -75,23 +75,23 @@ public class BlinnPhongRenderPass : ShaderModelPass
 
     public override void SetupPointLightInfo(GL gl, Shader Shader, CameraActor Camera, PointLightActor PointLightActor)
     {
-        Shader!.SetVector3("lightInfo.CameraPosition", Camera.WorldPosition);
-        Shader!.SetVector3("lightInfo.Color", PointLightActor.LightColorVec3);
-        Shader!.SetVector3("lightInfo.LightPosition", PointLightActor.WorldPosition);
-        Shader!.SetFloat("lightInfo.AttenuationFactor", PointLightActor.AttenuationFactor);
+        Shader!.SetVector3("Light.CameraPosition", Camera.WorldPosition);
+        Shader!.SetVector3("Light.Color", PointLightActor.LightColorVec3);
+        Shader!.SetVector3("Light.LightPosition", PointLightActor.WorldPosition);
+        Shader!.SetFloat("Light.AttenuationFactor", PointLightActor.AttenuationFactor);
         Shader!.SetMatrix("Projection", Camera.ProjectTransform);
         Shader!.SetMatrix("View", Camera.ViewTransform);
     }
 
     public override void SetupSpotLightInfo(GL gl, Shader Shader, CameraActor Camera, SpotLightActor SpotLightActor)
     {
-        Shader!.SetVector3("lightInfo.CameraPosition", Camera.WorldPosition);
-        Shader!.SetVector3("lightInfo.LightPosition", SpotLightActor.WorldPosition);
-        Shader!.SetVector3("lightInfo.Direction", SpotLightActor.ForwardVector);
-        Shader!.SetFloat("lightInfo.Distance", SpotLightActor.Distance);
-        Shader!.SetVector3("lightInfo.Color", SpotLightActor.LightColorVec3);
-        Shader!.SetFloat("lightInfo.InteriorCosine", MathF.Cos(SpotLightActor.InteriorAngle.DegreeToRadians()));
-        Shader!.SetFloat("lightInfo.ExteriorCosine", MathF.Cos(SpotLightActor.ExteriorAngle.DegreeToRadians()));
+        Shader!.SetVector3("Light.CameraPosition", Camera.WorldPosition);
+        Shader!.SetVector3("Light.LightPosition", SpotLightActor.WorldPosition);
+        Shader!.SetVector3("Light.Direction", SpotLightActor.ForwardVector);
+        Shader!.SetFloat("Light.Distance", SpotLightActor.Distance);
+        Shader!.SetVector3("Light.Color", SpotLightActor.LightColorVec3);
+        Shader!.SetFloat("Light.InteriorCosine", MathF.Cos(SpotLightActor.InteriorAngle.DegreeToRadians()));
+        Shader!.SetFloat("Light.ExteriorCosine", MathF.Cos(SpotLightActor.ExteriorAngle.DegreeToRadians()));
 
         Shader!.SetMatrix("Projection", Camera.ProjectTransform);
         Shader!.SetMatrix("View", Camera.ViewTransform);

@@ -14,7 +14,7 @@ uniform mat4 Model;
 
 out PassToFrag passToFrag;
 
-uniform LightInfo lightInfo;
+uniform LightInfo Light;
 
 void main()
 {
@@ -27,29 +27,19 @@ void main()
 	passToFrag.Normal = Normal;
 	passToFrag.Color = Color;
 	passToFrag.TexCoord = TexCoord;
-	passToFrag.LightColor = lightInfo.Color;
-	passToFrag.CameraPosition = lightInfo.CameraPosition;
 	passToFrag.TangentPosition = TBN * vec3(Model * vec4(Position, 1.0f));
-	passToFrag.CameraTangentPosition = TBN * passToFrag.CameraPosition;
-	passToFrag.IndirectLightStrength = passToFrag.IndirectLightStrength;
+	passToFrag.CameraTangentPosition = TBN * Light.CameraPosition;
 #ifdef _DIRECTIONLIGHT_
 	// 定向光朝向
-	passToFrag.LightTangentDirection = TBN * lightInfo.Direction;
+	passToFrag.LightTangentDirection = TBN * Light.Direction;
 #endif
 #ifdef _POINTLIGHT_
-	passToFrag.LightPosition = lightInfo.LightPosition;
-	passToFrag.LightTangentPosition = TBN * lightInfo.LightPosition;
-	passToFrag.AttenuationFactor = lightInfo.AttenuationFactor;
-
+	passToFrag.LightTangentPosition = TBN * Light.LightPosition;
 #endif
 
 #ifdef _SPOTLIGHT_
-	passToFrag.LightPosition = lightInfo.LightPosition;
-	passToFrag.LightTangentPosition = TBN * lightInfo.LightPosition;
-	passToFrag.Distance = lightInfo.Distance;
-	passToFrag.InteriorCosine = lightInfo.InteriorCosine;
-	passToFrag.ExteriorCosine = lightInfo.ExteriorCosine;
-	passToFrag.LightTangentDirection = TBN * lightInfo.Direction;
+	passToFrag.LightTangentPosition = TBN * Light.LightPosition;
+	passToFrag.LightTangentDirection = TBN * Light.Direction;
 #endif
 		
 	gl_Position = passToFrag.Position;

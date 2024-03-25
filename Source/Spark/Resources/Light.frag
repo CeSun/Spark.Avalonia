@@ -6,6 +6,7 @@ out vec4 glColor;
 
 in PassToFrag passToFrag;
 
+uniform LightInfo Light;
 uniform	sampler2D BaseColorTexture;
 uniform	sampler2D NormalTexture;
 
@@ -18,6 +19,21 @@ void main()
 	if (BaseColor.a <= 0.1)
 		discard;
 #endif
+	LightInfo tmp = Light;
 
-	glColor = BlinnPhongShading(BaseColor, Normal, passToFrag);
+	tmp.CameraPosition = passToFrag.CameraTangentPosition;
+#ifdef _DIRECTIONLIGHT_
+	// 定向光朝向
+	tmp.Direction = passToFrag.LightTangentDirection;
+#endif
+#ifdef _POINTLIGHT_
+	tmp.LightPosition = passToFrag.LightTangentPosition;
+#endif
+
+#ifdef _SPOTLIGHT_
+	tmp.LightPosition = passToFrag.LightTangentPosition;
+	tmp.Direction = passToFrag.LightTangentDirection;
+#endif
+
+	glColor = BlinnPhongShading(BaseColor, Normal, passToFrag.TangentPosition ,tmp);
 }

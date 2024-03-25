@@ -8,31 +8,19 @@ struct PassToFrag
 	vec3 Color;
 	// UV坐标
 	vec2 TexCoord;
-	// 摄像机世界空间坐标
-	vec3 CameraPosition;
-	// 光源颜色
-	vec3 LightColor;
 	// 片段切线空间坐标
 	vec3 TangentPosition;
 	// 摄像机切线空间坐标
 	vec3 CameraTangentPosition;
-	// 间接光强度
-	float IndirectLightStrength;
 #ifdef _DIRECTIONLIGHT_
 	// 定向光朝向
 	vec3 LightTangentDirection;
 #endif
 #ifdef _POINTLIGHT_
-	vec3 LightPosition;
 	vec3 LightTangentPosition;
-	float AttenuationFactor;
 #endif
 #ifdef _SPOTLIGHT_
-	vec3 LightPosition;
 	vec3 LightTangentPosition;
-	float Distance;
-	float InteriorCosine;
-	float ExteriorCosine;
 	vec3 LightTangentDirection;
 #endif
 };
@@ -60,35 +48,35 @@ struct LightInfo
 #endif
 };
 
-vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, PassToFrag passToFrag)
+vec4 BlinnPhongShading(vec4 BaseColor, vec3 Normal, vec3 FragPosition, LightInfo Light)
 {
 	// 光源方向
 #ifdef _DIRECTIONLIGHT_
-	vec3 LightDirection = vec3(-1.0) * passToFrag.LightTangentDirection;
+	vec3 LightDirection = vec3(-1.0) * Light.Direction;
 #else
-	vec3 LightDirection = normalize(passToFrag.LightTangentPosition - passToFrag.TangentPosition);
+	vec3 LightDirection = normalize(Light.LightPosition - FragPosition);
 #endif
 	// 摄像机方向
-	vec3 CameraDirection = passToFrag.CameraTangentPosition - passToFrag.TangentPosition;
+	vec3 CameraDirection = Light.CameraPosition - FragPosition;
 	
 	// 漫反射光
 	float Diffuse = max(dot(LightDirection, Normal), 0.0);
-	vec3 DiffuseLight = Diffuse * passToFrag.LightColor * BaseColor.xyz;
+	vec3 DiffuseLight = Diffuse * Light.Color * BaseColor.xyz;
 	// 镜面光
 	vec3 HalfVector = normalize(LightDirection + CameraDirection);
 #ifndef _SHADERMODEL_LAMBERT_
 	float Specular = pow(max(dot(Normal, HalfVector), 0.0), 32.0);
-	vec3 SpecularLight = Specular * BaseColor.xyz * passToFrag.LightColor;
+	vec3 SpecularLight = Specular * BaseColor.xyz * Light.Color;
 #endif
 	float factor = 1.0f;
 #ifdef _POINTLIGHT_
-	float Distance = length(passToFrag.LightTangentPosition - passToFrag.TangentPosition);
-	factor = passToFrag.AttenuationFactor / (Distance * Distance);
+	float Distance = length(Light.LightPosition - FragPosition);
+	factor = Light.AttenuationFactor / (Distance * Distance);
 #endif
 #ifdef _SPOTLIGHT_
-	float theta = dot(LightDirection, normalize(-1.0 * passToFrag.LightTangentDirection));
-	float Epsilon = passToFrag.InteriorCosine - passToFrag.ExteriorCosine;
-	factor = clamp((theta - passToFrag.ExteriorCosine) / Epsilon, 0.0, 1.0);
+	float theta = dot(LightDirection, normalize(-1.0 * Light.Direction));
+	float Epsilon = Light.InteriorCosine - Light.ExteriorCosine;
+	factor = clamp((theta - Light.ExteriorCosine) / Epsilon, 0.0, 1.0);
 
 #endif
 #ifdef _SHADERMODEL_BLINNPHONG_

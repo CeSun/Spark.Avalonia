@@ -27,7 +27,6 @@ public class Shader : IDisposable
     {
         if (gl == null)
             return;
-        gl.UseProgram(ProgramId);
         var location = gl.GetUniformLocation(ProgramId, name);
 #if DEBUG && TraceShaderUniformError
         if (location < 0)
@@ -50,7 +49,6 @@ public class Shader : IDisposable
     {
         if (gl == null)
             return;
-        gl.UseProgram(ProgramId);
         var location = gl.GetUniformLocation(ProgramId, name);
 #if DEBUG && TraceShaderUniformError
         if (location < 0)
@@ -73,7 +71,6 @@ public class Shader : IDisposable
     {
         if (gl == null)
             return;
-        gl.UseProgram(ProgramId);
         var location = gl.GetUniformLocation(ProgramId, name);
 #if DEBUG && TraceShaderUniformError
         if (location < 0)
@@ -96,7 +93,6 @@ public class Shader : IDisposable
     {
         if (gl == null)
             return;
-        gl.UseProgram(ProgramId);
         var location = gl.GetUniformLocation(ProgramId, name);
 #if DEBUG && TraceShaderUniformError
         if (location < 0)
@@ -119,7 +115,6 @@ public class Shader : IDisposable
     {
         if (gl == null)
             return;
-        gl.UseProgram(ProgramId);
         var location = gl.GetUniformLocation(ProgramId, name);
 #if DEBUG && TraceShaderUniformError
         if (location < 0)

@@ -1,14 +1,18 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
+using Avalonia.Platform;
 using Spark.Actors;
 using Spark.Assets;
 using Spark.Avalonia;
 using Spark.Avalonia.Actors;
 using Spark.Importer;
 using Spark.Util;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Example.Views;
@@ -31,9 +35,9 @@ public partial class MainView : UserControl
         // 创建并加载一个模型
         var sma = Engine.CreateActor<StaticMeshActor>();
         StaticMesh mesh = new StaticMesh();
-        using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
+        using (var sr = AssetLoader.Open(new Uri("avares://Example/Assets/Jason.glb")))
         {
-            sma.StaticMesh = await Task.Run(() => Engine.ImportStaticMeshFromGLB(sr.BaseStream));
+            sma.StaticMesh = await Task.Run(() => Engine.ImportStaticMeshFromGLB(sr));
             sma.StaticMesh.Elements.ForEach(element => element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert);
         }
         sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
