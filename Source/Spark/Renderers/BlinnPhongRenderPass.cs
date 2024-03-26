@@ -51,19 +51,37 @@ public class BlinnPhongRenderPass : ShaderModelPass
     public override unsafe void RenderStaticMesh(GL gl, Shader Shader, CameraActor Camera, ElementProxy proxy)
     {
         Shader!.SetMatrix("Model", proxy.ModelTransform);
-        Shader!.SetInt("BaseColorTexture", 0);
-        gl.ActiveTexture(GLEnum.Texture0);
-        if (proxy.Element.Material?.Diffuse != null)
-            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
-        else
-            gl.BindTexture(GLEnum.Texture2D, 0);
-
-        Shader!.SetInt("NormalTexture", 1);
-        gl.ActiveTexture(GLEnum.Texture1);
         if (proxy.Element.Material?.Normal != null)
-            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Normal!.TextureId);
+        {
+            Shader!.SetFloat("HasBaseColor", 1);
+            Shader!.SetInt("BaseColorTexture", 0);
+            gl.ActiveTexture(GLEnum.Texture0);
+            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Diffuse!.TextureId);
+        }
         else
+        {
+
+            Shader!.SetFloat("HasBaseColor", 0);
+            Shader!.SetInt("BaseColorTexture", 0);
+            gl.ActiveTexture(GLEnum.Texture0);
             gl.BindTexture(GLEnum.Texture2D, 0);
+        }
+
+        if (proxy.Element.Material?.Normal != null)
+        {
+            Shader!.SetFloat("HasNormal", 1);
+            Shader!.SetInt("NormalTexture", 1);
+            gl.ActiveTexture(GLEnum.Texture1);
+            gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.Normal!.TextureId);
+        }
+        else
+        {
+
+            Shader!.SetFloat("HasNormal", 0);
+            Shader!.SetInt("NormalTexture", 1);
+            gl.ActiveTexture(GLEnum.Texture1);
+            gl.BindTexture(GLEnum.Texture2D, 0);
+        }
 
         gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
         gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
