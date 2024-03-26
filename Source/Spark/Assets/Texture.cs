@@ -40,6 +40,7 @@ public class Texture
 
     public List<byte> Data = new List<byte>();
 
+    public bool GammaCorrection;
     public unsafe void SetupRender(GL gl)
     {
         if (TextureId > 0)
@@ -50,9 +51,19 @@ public class Texture
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)GLEnum.Repeat);
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Linear);
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Linear);
+        GLEnum ColorSpace = Channel.ToGLEnum();
+        if (GammaCorrection == true)
+        {
+            ColorSpace = ColorSpace switch
+            {
+                GLEnum.Rgb => GLEnum.Srgb8,
+                GLEnum.Rgba => GLEnum.Srgb8Alpha8,
+                _ => GLEnum.Srgb8
+            };
+        }
         fixed (void* p = CollectionsMarshal.AsSpan(Data))
         {
-            gl.TexImage2D(GLEnum.Texture2D, 0, (int)Channel.ToGLEnum(), (uint)Width, (uint)Height, 0, Channel.ToGLEnum(), GLEnum.UnsignedByte, p);
+            gl.TexImage2D(GLEnum.Texture2D, 0, (int)ColorSpace, (uint)Width, (uint)Height, 0, Channel.ToGLEnum(), GLEnum.UnsignedByte, p);
         }
         gl.BindTexture(GLEnum.Texture2D, 0);
         Data.Clear();

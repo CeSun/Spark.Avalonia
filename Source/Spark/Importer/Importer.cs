@@ -17,23 +17,23 @@ public class TextureChannelNotSupportException : Exception
 }
 public static class Importer
 {
-    public static Texture ImportTexture(this Engine engine, Stream stream)
+    public static Texture ImportTexture(this Engine engine, Stream stream, bool GammaCorrection = false)
     {
         var result = ImageResult.FromStream(stream);
-        var texture = ImportTexture(result);
+        var texture = ImportTexture(result, GammaCorrection);
         engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
-    public static Texture ImportTextureFromMemory(this Engine engine, byte[] bytes)
+    public static Texture ImportTextureFromMemory(this Engine engine, byte[] bytes, bool GammaCorrection = false)
     {
         var result = ImageResult.FromMemory(bytes);
-        var texture = ImportTexture(result);
+        var texture = ImportTexture(result, GammaCorrection);
         engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
-    private static Texture ImportTexture(ImageResult result)
+    private static Texture ImportTexture(ImageResult result, bool GammaCorrection)
     {
         var texture = new Texture();
         texture.Width = result.Width;
@@ -44,6 +44,7 @@ public static class Importer
             ColorComponents.RedGreenBlueAlpha => TextureChannel.RGBA,
             _ => throw new TextureChannelNotSupportException()
         };
+        texture.GammaCorrection = GammaCorrection;
         texture.Data.AddRange(result.Data);
         return texture;
     }
@@ -100,7 +101,7 @@ public static class Importer
                     };
                     if (mesh.Material.Channels.Count() > 0)
                     {
-                        element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray());
+                        element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray(), true);
                         var channel = mesh.Material.FindChannel("Normal");
                         if (channel != null && channel.Value.Texture != null)
                         {
