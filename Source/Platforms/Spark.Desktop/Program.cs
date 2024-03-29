@@ -27,10 +27,9 @@ camera1.ClearColor = Color.LightGray;
 // 创建并加载一个模型
 var sma = Engine.CreateActor<StaticMeshActor>();
 StaticMesh mesh = new StaticMesh();
-using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
+using (var sr = new StreamReader("F:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
 {
     sma.StaticMesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
-    sma.StaticMesh.Elements.ForEach(element => element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert);
 }
 sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
 // 创建一个定向光源

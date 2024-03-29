@@ -32,59 +32,6 @@ public partial class MainView : UserControl
     StaticMesh? Cube;
     StaticMesh? Wpn;
 
-    public void ChangeLambert(object sender, RoutedEventArgs args)
-    {
-        if (Person != null)
-        {
-            foreach(var element in Person.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert;
-            }
-        }
-
-        if (Cube != null)
-        {
-            foreach (var element in Cube.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert;
-            }
-        }
-
-        if (Wpn != null)
-        {
-            foreach (var element in Wpn.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.Lambert;
-            }
-        }
-    }
-    public void ChangeBlinPhong(object sender, RoutedEventArgs args)
-    {
-        if (Person != null)
-        {
-            foreach (var element in Person.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.BlinnPhong;
-            }
-        }
-
-        if (Cube != null)
-        {
-            foreach (var element in Cube.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.BlinnPhong;
-            }
-        }
-
-        if (Wpn != null)
-        {
-            foreach (var element in Wpn.Elements)
-            {
-                element.Material.ShaderModel = Spark.Avalonia.Assets.ShaderModel.BlinnPhong;
-            }
-        }
-    }
-
     private async Task LoadAsset(Engine engine)
     {
         var t1 = Task.Run(() =>
@@ -117,22 +64,22 @@ public partial class MainView : UserControl
 
     public void ChangePerson(object sender, RoutedEventArgs args)
     {
-        StaticMeshActor.StaticMesh = Person;
-        StaticMeshActor.Position = CameraActor.ForwardVector * 70 + CameraActor.UpVector * -50;
+        StaticMeshActor!.StaticMesh = Person;
+        StaticMeshActor.Position = CameraActor!.ForwardVector * 70 + CameraActor.UpVector * -50;
         StaticMeshActor.Scale = Vector3.One;
     }
 
     public void ChangeWpn(object sender, RoutedEventArgs args)
     {
-        StaticMeshActor.StaticMesh = Wpn;
-        StaticMeshActor.Position = CameraActor.ForwardVector * 50;
-        StaticMeshActor.Scale = Vector3.One;
+        StaticMeshActor!.StaticMesh = Wpn;
+        StaticMeshActor!.Position = CameraActor!.ForwardVector * 50;
+        StaticMeshActor!.Scale = Vector3.One;
     }
 
     public void ChangeCube(object sender, RoutedEventArgs args)
     {
-        StaticMeshActor.StaticMesh = Cube;
-        StaticMeshActor.Position = CameraActor.ForwardVector * 50 + CameraActor.UpVector * -5;
+        StaticMeshActor!.StaticMesh = Cube;
+        StaticMeshActor.Position = CameraActor!.ForwardVector * 50 + CameraActor.UpVector * -5;
         StaticMeshActor.Scale = Vector3.One * 20;
     }
 

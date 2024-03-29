@@ -89,7 +89,6 @@ public static class Importer
                 {
                     element.Material = new Material()
                     {
-                        ShaderModel = ShaderModel.BlinnPhong,
                         BlendMode = mesh.Material.Alpha switch
                         {
                             AlphaMode.OPAQUE => BlendMode.Opaque,
@@ -98,14 +97,20 @@ public static class Importer
                             _ => BlendMode.Opaque,
                         }
                     };
-                    if (mesh.Material.Channels.Count() > 0)
+                    var channel = mesh.Material.FindChannel("BaseColor");
+                    if (channel != null && channel.Value.Texture != null)
                     {
-                        element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray());
-                        var channel = mesh.Material.FindChannel("Normal");
-                        if (channel != null && channel.Value.Texture != null)
-                        {
-                            element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
-                        }
+                        element.Material.BaseColor = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                    }
+                    channel = mesh.Material.FindChannel("Normal");
+                    if (channel != null && channel.Value.Texture != null)
+                    {
+                        element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                    }
+                    channel = mesh.Material.FindChannel("MetallicRoughness");
+                    if (channel != null && channel.Value.Texture != null)
+                    {
+                        element.Material.MetallicRoughness = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
                     }
                 }
                 element.SetupBTN();

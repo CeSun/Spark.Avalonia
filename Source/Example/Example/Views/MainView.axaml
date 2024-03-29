@@ -22,8 +22,6 @@
 				<Button Content="人" Click="ChangePerson"></Button>
 				<Button Content="枪" Click="ChangeWpn"></Button>
 				<Button Content="沙发" Click="ChangeCube"></Button>
-				<Button Content="兰伯特" Click="ChangeLambert"></Button>
-				<Button Content="布林冯" Click="ChangeBlinPhong"></Button>
 			</StackPanel>
 		</StackPanel>
 		<as:SparkCanvas Width=""  OnBeginPlay="OnWorldBeginPlay"></as:SparkCanvas>
