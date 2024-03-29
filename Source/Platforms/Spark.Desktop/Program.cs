@@ -39,13 +39,11 @@ light1.InteriorAngle = 5;
 light1.ExteriorAngle = 10;
 window.Resize += size =>
 {
-    Engine.DefaultRenderTarget.Width = size.X;
-    Engine.DefaultRenderTarget.Height = size.Y;
+    Engine.DefaultRenderTarget.Resize(size.X, size.Y);
 };
 window.Load += () =>
 {
-    Engine.DefaultRenderTarget.Width = window.Size.X;
-    Engine.DefaultRenderTarget.Height = window.Size.Y;
+    Engine.DefaultRenderTarget.Resize(window.Size.X, window.Size.Y);
     gl = GL.GetApi(window);
     Engine.Initialize(gl);
 };

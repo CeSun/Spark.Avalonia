@@ -12,9 +12,9 @@ public class BaseRenderTarget : IDisposable
 {
     public uint FrameBufferObject;
 
-    public int Width;
+    public int Width { private set; get; }
 
-    public int Height;
+    public int Height { private set; get; }
 
     private GL? gl;
     public void Dispose()
@@ -26,7 +26,7 @@ public class BaseRenderTarget : IDisposable
         }
     }
 
-    public BaseRenderTarget Use(GL gl)
+    public virtual BaseRenderTarget Use(GL gl)
     {
         this.gl = gl;
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, FrameBufferObject);
@@ -34,4 +34,9 @@ public class BaseRenderTarget : IDisposable
         return this;
     }
 
+    public virtual void Resize(int width, int height)
+    {
+        this.Width = width;
+        this.Height = height;
+    }
 }
