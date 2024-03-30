@@ -55,8 +55,7 @@ public class SparkCanvas : OpenGlControlBase
             int fbo;
             gl.GetIntegerv((int)GLEnum.DrawFramebufferBinding, out fbo);
             Engine.DefaultRenderTarget.FrameBufferObject = (uint)fbo;
-            Engine.DefaultRenderTarget.Width = (int)(Bounds.Width * VisualRoot!.RenderScaling);
-            Engine.DefaultRenderTarget.Height = (int)(Bounds.Height * VisualRoot!.RenderScaling);
+            Engine.DefaultRenderTarget.Resize((int)(Bounds.Width * VisualRoot!.RenderScaling), (int)(Bounds.Height * VisualRoot!.RenderScaling));
             IsNeedFlushDefaultFBO = false;
         }
 
@@ -79,7 +78,6 @@ public class SparkCanvas : OpenGlControlBase
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
-        Engine.DefaultRenderTarget.Width = (int)(Bounds.Width * VisualRoot!.RenderScaling);
-        Engine.DefaultRenderTarget.Height = (int)(Bounds.Height * VisualRoot!.RenderScaling);
+        Engine.DefaultRenderTarget.Resize((int)(Bounds.Width * VisualRoot!.RenderScaling), (int)(Bounds.Height * VisualRoot!.RenderScaling));
     }
 }

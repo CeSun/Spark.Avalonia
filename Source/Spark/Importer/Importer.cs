@@ -17,23 +17,23 @@ public class TextureChannelNotSupportException : Exception
 }
 public static class Importer
 {
-    public static Texture ImportTexture(this Engine engine, Stream stream, bool GammaCorrection = false)
+    public static Texture ImportTexture(this Engine engine, Stream stream)
     {
         var result = ImageResult.FromStream(stream);
-        var texture = ImportTexture(result, GammaCorrection);
+        var texture = ImportTexture(result);
         engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
-    public static Texture ImportTextureFromMemory(this Engine engine, byte[] bytes, bool GammaCorrection = false)
+    public static Texture ImportTextureFromMemory(this Engine engine, byte[] bytes)
     {
         var result = ImageResult.FromMemory(bytes);
-        var texture = ImportTexture(result, GammaCorrection);
+        var texture = ImportTexture(result);
         engine.AddRenderTask(texture.SetupRender);
         return texture;
     }
 
-    private static Texture ImportTexture(ImageResult result, bool GammaCorrection)
+    private static Texture ImportTexture(ImageResult result)
     {
         var texture = new Texture();
         texture.Width = result.Width;
@@ -44,7 +44,6 @@ public static class Importer
             ColorComponents.RedGreenBlueAlpha => TextureChannel.RGBA,
             _ => throw new TextureChannelNotSupportException()
         };
-        texture.GammaCorrection = GammaCorrection;
         texture.Data.AddRange(result.Data);
         return texture;
     }
@@ -90,7 +89,6 @@ public static class Importer
                 {
                     element.Material = new Material()
                     {
-                        ShaderModel = ShaderModel.BlinnPhong,
                         BlendMode = mesh.Material.Alpha switch
                         {
                             AlphaMode.OPAQUE => BlendMode.Opaque,
@@ -99,14 +97,20 @@ public static class Importer
                             _ => BlendMode.Opaque,
                         }
                     };
-                    if (mesh.Material.Channels.Count() > 0)
+                    var channel = mesh.Material.FindChannel("BaseColor");
+                    if (channel != null && channel.Value.Texture != null)
                     {
-                        element.Material.Diffuse = engine.ImportTextureFromMemory(mesh.Material.Channels.First().Texture.PrimaryImage.Content.Content.ToArray(), true);
-                        var channel = mesh.Material.FindChannel("Normal");
-                        if (channel != null && channel.Value.Texture != null)
-                        {
-                            element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
-                        }
+                        element.Material.BaseColor = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                    }
+                    channel = mesh.Material.FindChannel("Normal");
+                    if (channel != null && channel.Value.Texture != null)
+                    {
+                        element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                    }
+                    channel = mesh.Material.FindChannel("MetallicRoughness");
+                    if (channel != null && channel.Value.Texture != null)
+                    {
+                        element.Material.MetallicRoughness = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
                     }
                 }
                 element.SetupBTN();

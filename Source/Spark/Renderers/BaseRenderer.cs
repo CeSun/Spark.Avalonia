@@ -15,14 +15,8 @@ public abstract class BaseRenderer
     public readonly List<ElementProxy> OpaqueStaticMeshs = new();
     public readonly List<ElementProxy> MaskedStaticMeshs = new();
     public readonly List<ElementProxy> TranslucentStaticMeshs = new();
-
-    public Dictionary<ShaderModel, ShaderModelPass> ShaderModelPassMap = new Dictionary<ShaderModel, ShaderModelPass>();
     public virtual void Initialize(GL gl)
     {
-        foreach(var (_, pass) in ShaderModelPassMap)
-        {
-            pass.Initialize(gl);
-        }
     }
     public virtual void Render(GL gl, CameraActor Camera)
     {
@@ -30,10 +24,6 @@ public abstract class BaseRenderer
     }
     public virtual void Uninitialize(GL gl)
     {
-        foreach (var (_, pass) in ShaderModelPassMap)
-        {
-            pass.Uninitialize(gl);
-        }
     }
 
     private void Filter(CameraActor Camera)
@@ -44,11 +34,6 @@ public abstract class BaseRenderer
         MaskedStaticMeshs.Clear();
         TranslucentStaticMeshs.Clear();
         SpotLightActors.Clear();
-        foreach (var (_, pass) in ShaderModelPassMap)
-        {
-            pass.StaticMeshes.Clear();
-        }
-
         Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
         Camera.Engine.Octree.FrustumCulling(PointLightActors, Camera.GetPlanes());
         Camera.Engine.Octree.FrustumCulling(SpotLightActors, Camera.GetPlanes());
@@ -64,14 +49,6 @@ public abstract class BaseRenderer
                 MaskedStaticMeshs.Add(proxy);
             else if (element.Material.BlendMode == BlendMode.Translucent)
                 TranslucentStaticMeshs.Add(proxy);
-
-            if (ShaderModelPassMap.TryGetValue(element.Material.ShaderModel, out var pass))
-            {
-                if (element.Material.BlendMode == BlendMode.Translucent)
-                    pass.TranslucentStaticMeshs.Add(proxy);
-                else
-                    pass.StaticMeshes.Add(proxy);
-            }
         }
     }
 }
