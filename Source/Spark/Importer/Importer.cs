@@ -1,12 +1,10 @@
 ﻿using Spark.Assets;
-using Spark.Avalonia;
-using Spark.Avalonia.Assets;
 using StbImageSharp;
 using SharpGLTF.Schema2;
-using Texture = Spark.Avalonia.Assets.Texture;
+using Texture = Spark.Assets.Texture;
 using Silk.NET.OpenGLES;
 using System.Numerics;
-using Material = Spark.Avalonia.Assets.Material;
+using Material = Spark.Assets.Material;
 using Spark.Actors;
 
 namespace Spark.Importer;

@@ -1,4 +1,4 @@
-﻿using Spark.Avalonia.Actors;
+﻿using Spark.Actors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

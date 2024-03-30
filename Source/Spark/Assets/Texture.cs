@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Avalonia.Assets;
+namespace Spark.Assets;
 
 public enum TextureChannel
 {

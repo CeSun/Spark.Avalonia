@@ -2,12 +2,9 @@
 using Silk.NET.Windowing;
 using Spark.Actors;
 using Spark.Assets;
-using Spark.Avalonia;
-using Spark.Avalonia.Actors;
+using Spark;
 using Spark.Importer;
-using Spark.Util;
 using System.Drawing;
-using System.Numerics;
 
 var options = WindowOptions.Default with { 
     API = new GraphicsAPI(ContextAPI.OpenGLES, new APIVersion(3, 0)),

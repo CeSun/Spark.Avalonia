@@ -1,6 +1,4 @@
-﻿using Spark.Avalonia.Actors;
-using Spark.Avalonia.Assets;
-using Spark.Util;
+﻿using Spark.Util;
 using System.Numerics;
 
 namespace Spark.Actors;

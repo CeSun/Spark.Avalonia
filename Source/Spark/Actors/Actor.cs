@@ -1,7 +1,7 @@
 ﻿
 using System.Numerics;
 
-namespace Spark.Avalonia.Actors;
+namespace Spark.Actors;
 
 public class Actor
 {

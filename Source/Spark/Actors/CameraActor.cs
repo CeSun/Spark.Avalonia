@@ -10,7 +10,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Avalonia.Actors;
+namespace Spark.Actors;
 
 public enum CameraClearFlag
 {

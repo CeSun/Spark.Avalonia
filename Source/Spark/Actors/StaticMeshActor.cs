@@ -1,5 +1,5 @@
 ﻿using Spark.Assets;
-using Spark.Avalonia.Actors;
+using Spark.Actors;
 using Spark.Util;
 using System;
 using System.Collections.Generic;

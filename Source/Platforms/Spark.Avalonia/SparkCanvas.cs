@@ -4,10 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.OpenGL;
 using Avalonia.OpenGL.Controls;
 using Silk.NET.OpenGLES;
-using Spark.Avalonia.Actors;
-using Spark.Avalonia.Renderers;
 using System.Diagnostics;
-using System.Drawing;
 
 namespace Spark.Avalonia;
 

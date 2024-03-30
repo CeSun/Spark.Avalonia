@@ -1,11 +1,8 @@
 ﻿using Silk.NET.OpenGLES;
 using Spark.Actors;
 using Spark.Assets;
-using Spark.Avalonia.Actors;
-using Spark.Avalonia.Assets;
-using Spark.Renderers;
 
-namespace Spark.Avalonia.Renderers;
+namespace Spark.Renderers;
 
 public abstract class BaseRenderer
 {

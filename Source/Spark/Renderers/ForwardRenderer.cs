@@ -2,9 +2,6 @@
 using Silk.NET.OpenGLES;
 using Spark.Actors;
 using Spark.Assets;
-using Spark.Avalonia.Actors;
-using Spark.Avalonia.Assets;
-using Spark.Avalonia.Renderers;
 using Spark.Util;
 using System.Numerics;
 using System.Xml.Linq;

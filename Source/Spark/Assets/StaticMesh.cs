@@ -1,6 +1,5 @@
 ﻿using Jitter.LinearMath;
 using Silk.NET.OpenGLES;
-using Spark.Avalonia.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;

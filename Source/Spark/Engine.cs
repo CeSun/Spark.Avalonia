@@ -1,18 +1,10 @@
 ﻿using Silk.NET.OpenGLES;
 using Spark.Actors;
-using Spark.Avalonia.Actors;
-using Spark.Avalonia.Renderers;
 using Spark.Renderers;
 using Spark.RenderTarget;
 using Spark.Util;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Spark.Avalonia;
+namespace Spark;
 
 public class Engine
 {
