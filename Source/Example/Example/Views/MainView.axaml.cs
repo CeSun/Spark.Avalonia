@@ -1,19 +1,15 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Platform;
+using Spark;
 using Spark.Actors;
 using Spark.Assets;
 using Spark.Avalonia;
-using Spark.Avalonia.Actors;
 using Spark.Importer;
 using Spark.Util;
 using System;
 using System.Drawing;
-using System.IO;
 using System.Numerics;
-using System.Reflection;
-using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
 namespace Example.Views;
