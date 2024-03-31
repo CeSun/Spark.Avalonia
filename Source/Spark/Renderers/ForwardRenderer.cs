@@ -28,6 +28,7 @@ public class ForwardRenderer : BaseRenderer
     Shader? DirectionLightMaskedShader = null;
     Shader? PointLightMaskedShader = null;
     Shader? SpotLightMaskedShader = null;
+    Shader? TranslucentShader = null;
 
     Shader? PostProcessShader = null;
 
@@ -51,6 +52,7 @@ public class ForwardRenderer : BaseRenderer
         {
             Clear(gl, Camera);
             BasePass(gl, Camera);
+            TranslucentPass(gl, Camera);
         }
         PostProcessPass(gl, Camera);
     }
@@ -267,7 +269,7 @@ public class ForwardRenderer : BaseRenderer
     private unsafe void RenderStaticMesh(GL gl, Shader Shader, CameraActor Camera, ElementProxy proxy)
     {
         Shader!.SetMatrix("Model", proxy.ModelTransform);
-        if (proxy.Element.Material?.Normal != null)
+        if (proxy.Element.Material?.BaseColor != null)
         {
             Shader!.SetFloat("HasBaseColor", 1);
             Shader!.SetInt("BaseColorTexture", 0);
@@ -317,11 +319,15 @@ public class ForwardRenderer : BaseRenderer
         PointLightMaskedShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_POINTLIGHT_", "_BLENDMODE_MASKED_" });
         SpotLightMaskedShader = gl.CreateShader("Light.vert", "Light.frag", new() { "_SHADERMODEL_BLINNPHONG_", "_SPOTLIGHT_", "_BLENDMODE_MASKED_" });
 
+
+        TranslucentShader = gl.CreateShader("AmbientLight.vert", "Translucent.frag", new() { "_SHADERMODEL_BLINNPHONG_LAMBERT_" });
         PostProcessShader = gl.CreateShader("PostProcess.vert", "PostProcess.frag");
     }
     public unsafe void AmbientLight(GL gl, CameraActor Camera)
     {
+#if DEBUG
         using var _ = AmbientLightGroup.PushGroup(gl);
+#endif
         using (AmbientLightOpaqueShader!.Use(gl))
         {
             AmbientLightOpaqueShader.SetFloat("AmbientStrength", 0.05f);
@@ -331,7 +337,7 @@ public class ForwardRenderer : BaseRenderer
             {
                 AmbientLightOpaqueShader.SetMatrix("Model", proxy.ModelTransform);
 
-                if (proxy.Element.Material?.Normal != null)
+                if (proxy.Element.Material?.BaseColor != null)
                 {
                     AmbientLightOpaqueShader!.SetFloat("HasBaseColor", 1);
                     AmbientLightOpaqueShader!.SetInt("BaseColorTexture", 0);
@@ -370,6 +376,47 @@ public class ForwardRenderer : BaseRenderer
                 {
                     AmbientLightMaskedShader!.SetFloat("HasBaseColor", 0);
                     AmbientLightMaskedShader!.SetInt("BaseColorTexture", 0);
+                    gl.ActiveTexture(GLEnum.Texture0);
+                    gl.BindTexture(GLEnum.Texture2D, 0);
+                }
+                gl.BindVertexArray(proxy.Element.VertexArrayObjectIndex);
+                gl.DrawElements(GLEnum.Triangles, (uint)proxy.Element.IndicesCount, GLEnum.UnsignedInt, (void*)0);
+            }
+        }
+    }
+
+    private unsafe void TranslucentPass(GL gl, CameraActor Camera)
+    {
+        gl.Enable(EnableCap.Blend);
+        gl.BlendEquation(GLEnum.FuncAdd);
+        gl.BlendFunc(GLEnum.SrcAlpha, GLEnum.OneMinusSrcAlpha);
+        gl.Enable(EnableCap.DepthTest);
+        gl.DepthFunc(DepthFunction.Less);
+        TranslucentStaticMeshs.Sort((left, right) =>
+        {
+            if ((left.ModelTransform.Translation - Camera.WorldPosition).LengthSquared() < (left.ModelTransform.Translation - Camera.WorldPosition).LengthSquared())
+                return 1;
+            else return -1;
+        });
+        using(TranslucentShader!.Use(gl))
+        {
+            TranslucentShader.SetFloat("AmbientStrength", 0.05f);
+            TranslucentShader.SetMatrix("Projection", Camera.ProjectTransform);
+            TranslucentShader.SetMatrix("View", Camera.ViewTransform);
+            foreach (var proxy in TranslucentStaticMeshs)
+            {
+                TranslucentShader.SetMatrix("Model", proxy.ModelTransform);
+                if (proxy.Element.Material?.BaseColor != null)
+                {
+                    TranslucentShader!.SetFloat("HasBaseColor", 1);
+                    TranslucentShader!.SetInt("BaseColorTexture", 0);
+                    gl.ActiveTexture(GLEnum.Texture0);
+                    gl.BindTexture(GLEnum.Texture2D, proxy.Element.Material!.BaseColor!.TextureId);
+                }
+                else
+                {
+                    TranslucentShader!.SetFloat("HasBaseColor", 0);
+                    TranslucentShader!.SetInt("BaseColorTexture", 0);
                     gl.ActiveTexture(GLEnum.Texture0);
                     gl.BindTexture(GLEnum.Texture2D, 0);
                 }
