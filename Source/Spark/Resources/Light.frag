@@ -1,6 +1,4 @@
-﻿#version 300 es
-precision mediump float;
-#include <Common.glsl>
+﻿#include <Common.glsl>
 out vec4 glColor;
 
 

@@ -194,15 +194,32 @@ public static class ShaderHelper
             foreach(var micro in Micros)
             {
                 var line = $"#define {micro}";
-                lines.Insert(1, line);
+                lines.Insert(0, line);
             }
         }
         return string.Join("\n", lines);
     }
+
+    private static bool? IsOpenGLES;
+    private static string GLESHeader = "#version 300 es\r\nprecision mediump float;\r\n";
+    private static string GLHeader = "#version 330 core\r\nprecision mediump float;\r\n";
+
     public static Shader CreateShader(this GL gl, string vs, string fs, List<string>? Micros = default)
     {
-        var VertShaderSource = PreProcessShaderSource(vs, Micros);
-        var FragShaderSource = PreProcessShaderSource(fs, Micros);
+        if (IsOpenGLES == null)
+        {
+            var version = gl.GetStringS(GLEnum.Version);
+            if (version.ToLower().IndexOf("opengles") >= 0 || version.ToLower().IndexOf("opengl es") >= 0)
+            {
+                IsOpenGLES = true;
+            }
+            else
+            {
+                IsOpenGLES = false;
+            }
+        }
+        var VertShaderSource = (IsOpenGLES == true? GLESHeader: GLHeader) + PreProcessShaderSource(vs, Micros);
+        var FragShaderSource = (IsOpenGLES == true ? GLESHeader : GLHeader) + PreProcessShaderSource(fs, Micros);
         var vert = gl.CreateShader(GLEnum.VertexShader);
 
         gl.ShaderSource(vert, VertShaderSource);

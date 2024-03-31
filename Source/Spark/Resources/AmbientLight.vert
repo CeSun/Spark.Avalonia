@@ -1,6 +1,4 @@
-﻿#version 300 es
-precision mediump float;
-layout(location=0) in vec3 Position;
+﻿layout(location=0) in vec3 Position;
 layout(location=4) in vec3 Color;
 layout(location=5) in vec2 TexCoord;
 
