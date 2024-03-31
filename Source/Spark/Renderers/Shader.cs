@@ -209,7 +209,7 @@ public static class ShaderHelper
         if (IsOpenGLES == null)
         {
             var version = gl.GetStringS(GLEnum.Version);
-            if (version.ToLower().IndexOf("opengles") >= 0 || version.ToLower().IndexOf("opengl es") >= 0)
+            if (version.Replace(" ", "").ToLower().IndexOf("opengles") >= 0 )
             {
                 IsOpenGLES = true;
             }
