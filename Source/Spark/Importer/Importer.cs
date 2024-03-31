@@ -99,6 +99,18 @@ public static class Importer
                     if (channel != null && channel.Value.Texture != null)
                     {
                         element.Material.BaseColor = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
+                        element.Material.BaseColor.GammaCorrection = true;
+                    }
+                    else if (channel != null)
+                    {
+                        ;
+                        for (int i = 0; i < element.Vertices.Count; i++)
+                        {
+                            element.Vertices[i] = element.Vertices[i] with
+                            {
+                                Color = new Vector3(channel.Value.Color.X, channel.Value.Color.Y, channel.Value.Color.Z)
+                            };
+                        }
                     }
                     channel = mesh.Material.FindChannel("Normal");
                     if (channel != null && channel.Value.Texture != null)

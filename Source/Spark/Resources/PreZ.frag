@@ -2,7 +2,8 @@
 precision mediump float;
 
 #ifdef _BLENDMODE_MASKED_ 
-uniform sampler2D BaseColor;
+uniform	sampler2D BaseColorTexture;
+uniform float HasBaseColor;
 in vec2 OutTexCoord;
 #endif
 
@@ -11,7 +12,9 @@ in vec2 OutTexCoord;
 void main()
 {
 #ifdef _BLENDMODE_MASKED_ 
-	vec4 BaseColor = texture(BaseColor, OutTexCoord);
+	vec4 BaseColor= vec4(1.0f);
+	if (HasBaseColor > 0.0)
+		BaseColor= texture(BaseColorTexture, OutTexCoord);
 	if (BaseColor.a <= 0.0)
 		discard;
 #endif

@@ -14,11 +14,11 @@ uniform float HasNormal;
 
 void main()
 {
-	vec4 BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
+	vec4 BaseColor;
 	vec3 Normal = texture(NormalTexture, passToFrag.TexCoord).xyz;
 	// 有无颜色贴图
 	if (HasBaseColor > 0.0)
-		BaseColor = BaseColor;
+		BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
 	else
 		BaseColor = vec4(passToFrag.Color, 1.0f);
 	// 有无法线贴图

@@ -98,28 +98,29 @@ namespace Spark {
         ///	vec3 Color;
         ///	// UV坐标
         ///	vec2 TexCoord;
-        ///	// 摄像机世界空间坐标
-        ///	vec3 CameraPosition;
-        ///	// 光源颜色
-        ///	vec3 LightColor;
         ///	// 片段切线空间坐标
         ///	vec3 TangentPosition;
         ///	// 摄像机切线空间坐标
         ///	vec3 CameraTangentPosition;
-        ///	// 间接光强度
-        ///	float IndirectLightStrength;
         ///#ifdef _DIRECTIONLIGHT_
         ///	// 定向光朝向
         ///	vec3 LightTangentDirection;
         ///#endif
         ///#ifdef _POINTLIGHT_
-        ///	vec3 LightPosition;
         ///	vec3 LightTangentPosition;
-        ///	float AttenuationFactor;
+        ///#endif
+        ///#ifdef _SPOTLIGHT_
+        ///	vec3 LightTangentPosition;
+        ///	vec3 LightTangentDirection;
         ///#endif
         ///};
         ///
-        /// [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///
+        ///struct LightInfo
+        ///{
+        ///	vec3 CameraPosition;
+        ///	vec3 Color;
+        ///#ifdef _DIR [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Common_glsl {
             get {
@@ -136,22 +137,21 @@ namespace Spark {
         ///
         ///in PassToFrag passToFrag;
         ///
-        ///#ifdef _SHADERMODEL_BLINNPHONG_
+        ///uniform LightInfo Light;
         ///uniform	sampler2D BaseColorTexture;
+        ///uniform float HasBaseColor;
         ///uniform	sampler2D NormalTexture;
-        ///#endif
+        ///uniform float HasNormal;
         ///
         ///void main()
         ///{
         ///	vec4 BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
-        ///#ifndef _PREZ_
-        ///	if (BaseColor.a &lt;= 0.1)
-        ///		discard;
-        ///#endif
-        ///	// vec4 Normal = texture(NormalTexture, passToFrag.TexCoord);
-        ///
-        ///#ifdef _SHADERMODEL_BLINNPHONG_
-        ///	glColor = BlinnPhongDirectionShadi [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///	vec3 Normal = texture(NormalTexture, passToFrag.TexCoord).xyz;
+        ///	// 有无颜色贴图
+        ///	if (HasBaseColor &gt; 0.0)
+        ///		BaseColor = BaseColor;
+        ///	else
+        ///		BaseColor = vec4(1 [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Light_frag {
             get {
@@ -176,16 +176,62 @@ namespace Spark {
         ///
         ///out PassToFrag passToFrag;
         ///
-        ///uniform LightInfo lightInfo;
+        ///uniform LightInfo Light;
         ///
         ///void main()
         ///{
         ///	vec3 T = normalize(vec3(Model * vec4(Tangent,   0.0)));
-        ///	vec3 B = norm [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///	vec3 B = normaliz [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Light_vert {
             get {
                 return ResourceManager.GetString("Light.vert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #version 300 es
+        ///out vec4 glColor;
+        ///
+        ///uniform sampler2D ColorTexture;
+        ///
+        ///in vec2 OutTexCoord;
+        ///
+        ///void main()
+        ///{
+        ///	vec4 Color = texture2D(ColorTexture, OutTexCoord);
+        ///
+        ///	// HDR 映射 LDR
+        ///	Color =vec4( Color.xyz / (Color.xyz + vec3(1.0)) ,Color.w);
+        ///	// 伽马矫正
+        ///	Color = vec4(pow(Color.xyz, 1.0f/2.2f)  ,Color.w);
+        ///	
+        ///	glColor = Color;
+        ///} 的本地化字符串。
+        /// </summary>
+        internal static string PostProcess_frag {
+            get {
+                return ResourceManager.GetString("PostProcess.frag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #version 300 es
+        ///layout(location=0) in vec3 Position;
+        ///layout(location=1) in vec2 TexCoord;
+        ///
+        ///
+        ///out vec2 OutTexCoord;
+        ///
+        ///void main()
+        ///{
+        ///	OutTexCoord = TexCoord;
+        ///	gl_Position = vec4(Position, 1.0f);
+        ///} 的本地化字符串。
+        /// </summary>
+        internal static string PostProcess_vert {
+            get {
+                return ResourceManager.GetString("PostProcess.vert", resourceCulture);
             }
         }
         

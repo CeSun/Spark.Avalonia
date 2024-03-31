@@ -30,7 +30,6 @@ public class BaseRenderTarget : IDisposable
     {
         this.gl = gl;
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, FrameBufferObject);
-        gl.Viewport(new Size(Width, Height));
         return this;
     }
 
