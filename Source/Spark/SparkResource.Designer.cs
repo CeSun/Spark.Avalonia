@@ -67,23 +67,57 @@ namespace Spark {
         ///out vec4 glColor;
         ///uniform float AmbientStrength;
         ///
-        ///uniform sampler2D BaseColor;
+        ///uniform	sampler2D BaseColorTexture;
+        ///uniform float HasBaseColor;
         ///in vec2 OutTexCoord;
-        ///
+        ///in vec3 OutColor;
         ///
         ///void main()
         ///{
-        ///	vec4 BaseColor = texture(BaseColor, OutTexCoord);
-        ///#ifndef _PREZ_ 
+        ///	vec4 BaseColor= vec4(OutColor, 1.0f);
+        ///	if (HasBaseColor &gt; 0.0)
+        ///		BaseColor= texture(BaseColorTexture, OutTexCoord);
+        ///#ifdef _BLENDMODE_MASKED_
         ///	if (BaseColor.a &lt;= 0.0)
         ///		discard;
         ///#endif
-        ///	glColor = BaseColor * AmbientStrength;
+        ///	glColor = vec4(BaseColor.xyz * AmbientStrength, BaseColor.a);
         ///} 的本地化字符串。
         /// </summary>
         internal static string AmbientLight_frag {
             get {
                 return ResourceManager.GetString("AmbientLight.frag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #version 300 es
+        ///precision mediump float;
+        ///layout(location=0) in vec3 Position;
+        ///layout(location=4) in vec3 Color;
+        ///layout(location=5) in vec2 TexCoord;
+        ///
+        ///uniform mat4 Projection;
+        ///uniform mat4 View;
+        ///uniform mat4 Model;
+        ///
+        ///#ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
+        ///out vec2 OutTexCoord;
+        ///out vec3 OutColor;
+        ///#endif
+        ///
+        ///void main()
+        ///{
+        ///#ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
+        ///	OutTexCoord = TexCoord;
+        ///	OutColor = Color;
+        ///#endif
+        ///	gl_Position = Projection * View * Model * vec4(Position, 1.0f);
+        ///} 的本地化字符串。
+        /// </summary>
+        internal static string AmbientLight_vert {
+            get {
+                return ResourceManager.GetString("AmbientLight.vert", resourceCulture);
             }
         }
         
@@ -145,13 +179,13 @@ namespace Spark {
         ///
         ///void main()
         ///{
-        ///	vec4 BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
+        ///	vec4 BaseColor;
         ///	vec3 Normal = texture(NormalTexture, passToFrag.TexCoord).xyz;
         ///	// 有无颜色贴图
         ///	if (HasBaseColor &gt; 0.0)
-        ///		BaseColor = BaseColor;
+        ///		BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
         ///	else
-        ///		BaseColor = vec4(1 [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///		BaseColor = vec4(passToFrag.Co [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Light_frag {
             get {
@@ -191,20 +225,24 @@ namespace Spark {
         
         /// <summary>
         ///   查找类似 #version 300 es
+        ///precision mediump float;
         ///out vec4 glColor;
         ///
         ///uniform sampler2D ColorTexture;
+        ///
+        ///uniform vec2 CameraRenderTargetSize;
+        ///uniform vec2 RealRenderTargetSize;
         ///
         ///in vec2 OutTexCoord;
         ///
         ///void main()
         ///{
-        ///	vec4 Color = texture2D(ColorTexture, OutTexCoord);
+        ///	vec4 Color = texture(ColorTexture, OutTexCoord * vec2(CameraRenderTargetSize / RealRenderTargetSize));
         ///
         ///	// HDR 映射 LDR
         ///	Color =vec4( Color.xyz / (Color.xyz + vec3(1.0)) ,Color.w);
         ///	// 伽马矫正
-        ///	Color = vec4(pow(Color.xyz, 1.0f/2.2f)  ,Color.w);
+        ///	Color = vec4(pow(Color.xyz, vec3(1.0f/2.2f))  ,Color.w);
         ///	
         ///	glColor = Color;
         ///} 的本地化字符串。
@@ -217,6 +255,7 @@ namespace Spark {
         
         /// <summary>
         ///   查找类似 #version 300 es
+        ///precision mediump float;
         ///layout(location=0) in vec3 Position;
         ///layout(location=1) in vec2 TexCoord;
         ///
@@ -232,66 +271,6 @@ namespace Spark {
         internal static string PostProcess_vert {
             get {
                 return ResourceManager.GetString("PostProcess.vert", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///
-        ///#ifdef _BLENDMODE_MASKED_ 
-        ///uniform sampler2D BaseColor;
-        ///in vec2 OutTexCoord;
-        ///#endif
-        ///
-        ///
-        ///
-        ///void main()
-        ///{
-        ///#ifdef _BLENDMODE_MASKED_ 
-        ///	vec4 BaseColor = texture(BaseColor, OutTexCoord);
-        ///	if (BaseColor.a &lt;= 0.0)
-        ///		discard;
-        ///#endif
-        ///} 的本地化字符串。
-        /// </summary>
-        internal static string PreZ_frag {
-            get {
-                return ResourceManager.GetString("PreZ.frag", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///layout(location=0) in vec3 Position;
-        ///layout(location=5) in vec2 TexCoord;
-        ///
-        ///uniform mat4 Projection;
-        ///uniform mat4 View;
-        ///uniform mat4 Model;
-        ///
-        ///#ifdef _BLENDMODE_MASKED_
-        ///out vec2 OutTexCoord;
-        ///#endif
-        ///
-        ///#ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
-        ///out vec2 OutTexCoord;
-        ///#endif
-        ///
-        ///void main()
-        ///{
-        ///#ifdef _BLENDMODE_MASKED_
-        ///	OutTexCoord = TexCoord;
-        ///#endif
-        ///#ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
-        ///	OutTexCoord = TexCoord;
-        ///#endif
-        ///	gl_Position = Projection * View * M [字符串的其余部分被截断]&quot;; 的本地化字符串。
-        /// </summary>
-        internal static string PreZ_vert {
-            get {
-                return ResourceManager.GetString("PreZ.vert", resourceCulture);
             }
         }
     }

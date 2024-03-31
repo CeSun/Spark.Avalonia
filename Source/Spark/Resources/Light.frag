@@ -30,7 +30,7 @@ void main()
 	if (gl_FrontFacing == false)
 		Normal = -1.0 * Normal;
 
-#ifndef _PREZ_
+#ifdef _BLENDMODE_MASKED_
 	if (BaseColor.a <= 0.1)
 		discard;
 #endif

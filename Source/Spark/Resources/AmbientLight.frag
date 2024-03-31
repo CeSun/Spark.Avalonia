@@ -14,7 +14,7 @@ void main()
 	vec4 BaseColor= vec4(OutColor, 1.0f);
 	if (HasBaseColor > 0.0)
 		BaseColor= texture(BaseColorTexture, OutTexCoord);
-#ifndef _PREZ_ 
+#ifdef _BLENDMODE_MASKED_
 	if (BaseColor.a <= 0.0)
 		discard;
 #endif

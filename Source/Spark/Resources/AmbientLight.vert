@@ -8,10 +8,6 @@ uniform mat4 Projection;
 uniform mat4 View;
 uniform mat4 Model;
 
-#ifdef _BLENDMODE_MASKED_
-out vec2 OutTexCoord;
-#endif
-
 #ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
 out vec2 OutTexCoord;
 out vec3 OutColor;
@@ -19,9 +15,6 @@ out vec3 OutColor;
 
 void main()
 {
-#ifdef _BLENDMODE_MASKED_
-	OutTexCoord = TexCoord;
-#endif
 #ifdef _SHADERMODEL_BLINNPHONG_LAMBERT_
 	OutTexCoord = TexCoord;
 	OutColor = Color;
