@@ -142,4 +142,7 @@
 	<data name="Translucent.frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
 		<value>Resources\Translucent.frag;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;gb2312</value>
 	</data>
+	<data name="FXAA.frag" type="System.Resources.ResXFileRef, System.Windows.Forms">
+		<value>Resources\FXAA.frag;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;gb2312</value>
+	</data>
 </root>

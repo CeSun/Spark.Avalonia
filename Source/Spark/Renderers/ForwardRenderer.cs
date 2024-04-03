@@ -14,6 +14,7 @@ public class ForwardRenderer : BaseRenderer
 {
     RenderFeatures RenderFeatures;
     CustomRenderTarget BaseRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false };
+    CustomRenderTarget PostProcessRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false };
     public ForwardRenderer(RenderFeatures renderFeatures)
     {
         this.RenderFeatures = renderFeatures;
@@ -31,6 +32,7 @@ public class ForwardRenderer : BaseRenderer
     Shader? TranslucentShader = null;
 
     Shader? PostProcessShader = null;
+    Shader? FXAAShader = null;
 
     (uint Vao, uint Vbo, uint Ebo) PostProcessElement;
 #if DEBUG
@@ -62,10 +64,12 @@ public class ForwardRenderer : BaseRenderer
         if (Camera.RenderTarget.Width > BaseRenderTarget.Width) 
         {
             BaseRenderTarget.Resize(Camera.RenderTarget.Width, BaseRenderTarget.Height);
+            PostProcessRenderTarget.Resize(Camera.RenderTarget.Width, BaseRenderTarget.Height);
         }
         if (Camera.RenderTarget.Height > BaseRenderTarget.Height)
         {
             BaseRenderTarget.Resize(BaseRenderTarget.Width, Camera.RenderTarget.Height);
+            PostProcessRenderTarget.Resize(Camera.RenderTarget.Width, BaseRenderTarget.Height);
         }
     }
 
@@ -96,13 +100,11 @@ public class ForwardRenderer : BaseRenderer
 #if DEBUG
         using var _ = PostProcessGroup.PushGroup(gl);
 #endif
-        using(Camera.RenderTarget.Use(gl))
+        using(PostProcessRenderTarget.Use(gl))
         {
-            gl.DepthMask(true);
+            gl.DepthMask(false);
             gl.Disable(EnableCap.Blend);
-            gl.Enable(EnableCap.DepthTest);
-            gl.DepthFunc(DepthFunction.Less);
-            gl.Clear(ClearBufferMask.DepthBufferBit | ClearBufferMask.ColorBufferBit);
+            gl.Disable(EnableCap.DepthTest);
             using (PostProcessShader!.Use(gl))
             {
                 PostProcessShader!.SetInt("ColorTexture", 0);
@@ -115,6 +117,19 @@ public class ForwardRenderer : BaseRenderer
             }
         }
 
+        using (Camera.RenderTarget.Use(gl))
+        {
+            using (FXAAShader!.Use(gl))
+            {
+                FXAAShader.SetInt("ColorTexture", 0);
+                FXAAShader.SetVector2("RealRenderTargetSize", new Vector2(PostProcessRenderTarget.Width, PostProcessRenderTarget.Height));
+                FXAAShader.SetVector2("CameraRenderTargetSize", new Vector2(Camera.RenderTarget.Width, Camera.RenderTarget.Height));
+                gl.ActiveTexture(GLEnum.Texture0);
+                gl.BindTexture(GLEnum.Texture2D, PostProcessRenderTarget.ColorId);
+                gl.BindVertexArray(PostProcessElement.Vao);
+                gl.DrawElements(GLEnum.Triangles, 6, GLEnum.UnsignedInt, (void*)0);
+            }
+        }
     }
     public void BasePass(GL gl, CameraActor Camera)
     {
@@ -322,6 +337,8 @@ public class ForwardRenderer : BaseRenderer
 
         TranslucentShader = gl.CreateShader("AmbientLight.vert", "Translucent.frag", new() { "_SHADERMODEL_BLINNPHONG_LAMBERT_" });
         PostProcessShader = gl.CreateShader("PostProcess.vert", "PostProcess.frag");
+
+        FXAAShader = gl.CreateShader("PostProcess.vert", "FXAA.frag");
     }
     public unsafe void AmbientLight(GL gl, CameraActor Camera)
     {

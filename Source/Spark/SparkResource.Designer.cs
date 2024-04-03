@@ -61,10 +61,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///
-        ///out vec4 glColor;
+        ///   查找类似 out vec4 glColor;
         ///uniform float AmbientStrength;
         ///
         ///uniform	sampler2D BaseColorTexture;
@@ -91,9 +88,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///layout(location=0) in vec3 Position;
+        ///   查找类似 layout(location=0) in vec3 Position;
         ///layout(location=4) in vec3 Color;
         ///layout(location=5) in vec2 TexCoord;
         ///
@@ -163,9 +158,29 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///#include &lt;Common.glsl&gt;
+        ///   查找类似 out vec4 glColor;
+        ///
+        ///uniform sampler2D ColorTexture;
+        ///
+        ///uniform vec2 CameraRenderTargetSize;
+        ///uniform vec2 RealRenderTargetSize;
+        ///
+        ///in vec2 OutTexCoord;
+        ///
+        ///void main()
+        ///{
+        ///	vec4 Color = texture(ColorTexture, OutTexCoord * vec2(CameraRenderTargetSize / RealRenderTargetSize));
+        ///	glColor = Color;
+        ///} 的本地化字符串。
+        /// </summary>
+        internal static string FXAA_frag {
+            get {
+                return ResourceManager.GetString("FXAA.frag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 #include &lt;Common.glsl&gt;
         ///out vec4 glColor;
         ///
         ///
@@ -185,7 +200,9 @@ namespace Spark {
         ///	if (HasBaseColor &gt; 0.0)
         ///		BaseColor = texture(BaseColorTexture, passToFrag.TexCoord);
         ///	else
-        ///		BaseColor = vec4(passToFrag.Co [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///		BaseColor = vec4(passToFrag.Color, 1.0f);
+        ///	// 有无法线贴图
+        ///	if (HasNormal&gt; 0. [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Light_frag {
             get {
@@ -194,9 +211,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///#include &lt;Common.glsl&gt;
+        ///   查找类似 #include &lt;Common.glsl&gt;
         ///layout(location=0) in vec3 Position;
         ///layout(location=1) in vec3 Normal;
         ///layout(location=2) in vec3 Tangent;
@@ -215,7 +230,8 @@ namespace Spark {
         ///void main()
         ///{
         ///	vec3 T = normalize(vec3(Model * vec4(Tangent,   0.0)));
-        ///	vec3 B = normaliz [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        ///	vec3 B = normalize(vec3(Model * vec4(BitTangent, 0.0)));
+        ///	v [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string Light_vert {
             get {
@@ -224,9 +240,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///out vec4 glColor;
+        ///   查找类似 out vec4 glColor;
         ///
         ///uniform sampler2D ColorTexture;
         ///
@@ -254,9 +268,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///layout(location=0) in vec3 Position;
+        ///   查找类似 layout(location=0) in vec3 Position;
         ///layout(location=1) in vec2 TexCoord;
         ///
         ///
@@ -275,9 +287,7 @@ namespace Spark {
         }
         
         /// <summary>
-        ///   查找类似 #version 300 es
-        ///precision mediump float;
-        ///
+        ///   查找类似 
         ///out vec4 glColor;
         ///
         ///uniform	sampler2D BaseColorTexture;
