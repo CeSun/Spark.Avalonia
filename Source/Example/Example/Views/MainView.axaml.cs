@@ -86,7 +86,7 @@ public partial class MainView : UserControl
         var Engine = canvas.Engine;
         // 创建一个摄像机
         CameraActor = Engine.CreateActor<CameraActor>();
-        CameraActor.ClearColor = Color.White;
+        CameraActor.ClearColor = Color.Gray;
         // 创建并加载一个模型
         var sma = Engine.CreateActor<StaticMeshActor>();
         StaticMeshActor = sma;
@@ -99,7 +99,7 @@ public partial class MainView : UserControl
                 {
                     yaw = 0;
                 }
-                sma.Rotation = Quaternion.CreateFromYawPitchRoll(yaw.DegreeToRadians(), 0, 0);
+                // sma.Rotation = Quaternion.CreateFromYawPitchRoll(yaw.DegreeToRadians(), 0, 0);
                 await Task.Delay(10);
             }
         };

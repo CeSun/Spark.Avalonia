@@ -14,6 +14,11 @@ public enum TextureChannel
     RGBA
 }
 
+public enum TextureFilter
+{
+    Nearest,
+    Liner
+}
 public static class ChannelHelper
 {
     public static GLEnum ToGLEnum(this TextureChannel channel)

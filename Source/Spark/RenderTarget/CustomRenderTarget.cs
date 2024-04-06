@@ -1,5 +1,6 @@
 ﻿using SharpGLTF.Schema2;
 using Silk.NET.OpenGLES;
+using Spark.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace Spark.RenderTarget;
 
+
 public class CustomRenderTarget : BaseRenderTarget
 {
     public bool SizeDirty = true;
@@ -17,6 +19,8 @@ public class CustomRenderTarget : BaseRenderTarget
     public uint DepthId { get; private set; }
     public bool IsHdr {  get;  set; }
     public bool HasStencil { get; set; }
+
+    public TextureFilter Filter { get; set; }
     public CustomRenderTarget(int width, int height)
     {
         Resize(width, height);
@@ -44,8 +48,15 @@ public class CustomRenderTarget : BaseRenderTarget
             gl.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.Rgba8, (uint)width, (uint)height, 0, GLEnum.Rgba, GLEnum.UnsignedByte, (void*)0);
         else
             gl.TexImage2D(GLEnum.Texture2D, 0, (int)GLEnum.Rgba16f, (uint)width, (uint)height, 0, GLEnum.Rgba, GLEnum.HalfFloat, (void*)0);
-        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Nearest);
-        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Nearest);
+
+        GLEnum glFilter = Filter switch 
+        {
+            TextureFilter.Liner => GLEnum.Linear,
+            TextureFilter.Nearest => GLEnum.Nearest,
+            _ => GLEnum.Nearest
+        };
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)glFilter);
+        gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)glFilter);
         gl.FramebufferTexture2D(GLEnum.Framebuffer, GLEnum.ColorAttachment0, GLEnum.Texture2D, ColorId, 0);
 
         DepthId = gl.GenTexture();

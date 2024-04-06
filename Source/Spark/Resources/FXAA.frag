@@ -12,7 +12,7 @@ float CalcGrayscale(vec3 Color)
 	return 0.213 * Color.r + 0.715 * Color.g + 0.072 * Color.b;
 }
 
-float MaxValue(float v1, float v2, float v3, float v4, float v5)
+float MaxValue4(float v1, float v2, float v3, float v4)
 {
 	float Max = v1;
 	if (v2 > Max)
@@ -21,12 +21,18 @@ float MaxValue(float v1, float v2, float v3, float v4, float v5)
 		Max = v3;
 	if (v4 > Max)
 		Max = v4;
+	return Max;
+}
+float MaxValue5(float v1, float v2, float v3, float v4, float v5)
+{
+	float Max = MaxValue4(v1, v2, v3, v4);
 	if (v5 > Max)
 		Max = v5;
 	return Max;
 }
 
-float MinValue(float v1, float v2, float v3, float v4, float v5)
+
+float MinValue4(float v1, float v2, float v3, float v4)
 {
 	float Min = v1;
 	if (v2 < Min)
@@ -35,38 +41,46 @@ float MinValue(float v1, float v2, float v3, float v4, float v5)
 		Min = v3;
 	if (v4 < Min)
 		Min = v4;
+	return Min;
+}
+float MinValue5(float v1, float v2, float v3, float v4, float v5)
+{
+	float Min = MinValue4(v1, v2, v3, v4);
 	if (v5 < Min)
 		Min = v5;
 	return Min;
 }
 
+
 void main()
 {
+	float ConsoleCharpness = 8.0f;
+
 	vec2 TexCoord = OutTexCoord * vec2(CameraRenderTargetSize / RealRenderTargetSize);
 	vec2 Offset = 1.0f / vec2(textureSize(ColorTexture, 0));
 	vec4 MColor = texture(ColorTexture, TexCoord);
-	vec4 NColor = texture(ColorTexture, TexCoord - vec2(0, Offset.y));
-	vec4 SColor = texture(ColorTexture, TexCoord + vec2(0, Offset.y));
-	vec4 WColor = texture(ColorTexture, TexCoord - vec2(Offset.x, 0));
-	vec4 EColor = texture(ColorTexture, TexCoord + vec2(Offset.x, 0));
+	vec4 NWColor = texture(ColorTexture, TexCoord + vec2(-Offset.x, Offset.y));
+	vec4 NEColor = texture(ColorTexture, TexCoord + vec2(Offset.x, Offset.y));
+	vec4 SWColor = texture(ColorTexture, TexCoord + vec2(-Offset.x, -Offset.y));
+	vec4 SEColor = texture(ColorTexture, TexCoord + vec2(Offset.x, -Offset.y));
 
 	float M = CalcGrayscale(MColor.xyz);
-	float N = CalcGrayscale(NColor.xyz);
-	float S = CalcGrayscale(SColor.xyz);
-	float W = CalcGrayscale(WColor.xyz);
-	float E = CalcGrayscale(EColor.xyz);
+	float NW = CalcGrayscale(NWColor.xyz);
+	float NE = CalcGrayscale(NEColor.xyz);
+	float SW = CalcGrayscale(SWColor.xyz);
+	float SE = CalcGrayscale(SEColor.xyz);
 
-	float Max = MaxValue(M, N, S, W, E);
-	float Min = MinValue(M, N, S, W, E);
-	float Contrast = Max - Min;
+	float Max = MaxValue5(M, NW, NE, SW, SE);
+	float Min = MinValue5(M, NW, NE, SW, SE);
 
 	if (Max - Min > 0.3f)
 	{
-		glColor = vec4(1.0f);
+		glColor = (NWColor + NEColor + SWColor + SEColor + MColor) * 0.2;
+
 	}
 	else
 	{
-		glColor = vec4(0.0f);
+		glColor = MColor;
 	}
 	// glColor = vec4(Contrast, Contrast, Contrast, 1.0f);
 	// glColor = Color;

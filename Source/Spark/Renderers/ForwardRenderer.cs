@@ -14,7 +14,7 @@ public class ForwardRenderer : BaseRenderer
 {
     RenderFeatures RenderFeatures;
     CustomRenderTarget BaseRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false };
-    CustomRenderTarget PostProcessRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false };
+    CustomRenderTarget PostProcessRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false, Filter = TextureFilter.Liner };
     public ForwardRenderer(RenderFeatures renderFeatures)
     {
         this.RenderFeatures = renderFeatures;
