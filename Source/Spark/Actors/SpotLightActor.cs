@@ -70,9 +70,9 @@ public class SpotLightActor : BaseLightActor, IActorCreator<SpotLightActor>
         base.UnInitialize();
         Engine.Octree.RemoveObject(BoundingBox);
     }
-    public override void OnTransformChanged()
+    public override void OnTransformChangedTickEnd()
     {
-        base.OnTransformChanged();
+        base.OnTransformChangedTickEnd();
         UpdateOctree();
     }
 

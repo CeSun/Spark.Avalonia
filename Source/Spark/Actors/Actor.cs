@@ -95,10 +95,10 @@ public class Actor (Engine engine) : IActorCreator<Actor>
     {
         if (IsDirty != true) 
             return;
-        OnTransformChanged();
+        OnTransformChangedTickEnd();
         IsDirty = false;
     }
-    public virtual void OnTransformChanged()
+    public virtual void OnTransformChangedTickEnd()
     {
 
     }

@@ -40,9 +40,9 @@ public class PointLightActor : BaseLightActor, IActorCreator<PointLightActor>
         BoundingSphere.Radius = _attenuationRadius;
         Engine.Octree.InsertObject(BoundingSphere);
     }
-    public override void OnTransformChanged()
+    public override void OnTransformChangedTickEnd()
     {
-        base.OnTransformChanged();
+        base.OnTransformChangedTickEnd();
         UpdateOctree();
     }
     public override void UnInitialize()

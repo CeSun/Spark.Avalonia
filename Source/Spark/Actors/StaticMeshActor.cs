@@ -106,9 +106,9 @@ public class StaticMeshActor(Engine engine) : Actor(engine), IActorCreator<Stati
         }
         AddToOctree();
     }
-    public override void OnTransformChanged()
+    public override void OnTransformChangedTickEnd()
     {
-        base.OnTransformChanged();
+        base.OnTransformChangedTickEnd();
         UpdateOctree();
     }
 
