@@ -28,15 +28,8 @@ public class CameraActor(Engine engine) : Actor(engine), IActorCreator<CameraAct
     public int Order = 1;
     public Matrix4x4 ProjectTransform => Matrix4x4.CreateLookAt(WorldPosition, WorldPosition + ForwardVector, UpVector);
 
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-    public BaseRenderTarget RenderTarget;
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-
-    public override void Initialize()
-    {
-        base.Initialize();
-        RenderTarget = Engine.DefaultRenderTarget;
-    }
+    public BaseRenderTarget RenderTarget = engine.DefaultRenderTarget;
+   
 
     private Plane[] _tmpPlanes = new Plane[6];
     public Plane[] GetPlanes()
