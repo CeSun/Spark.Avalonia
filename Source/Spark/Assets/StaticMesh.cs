@@ -1,13 +1,7 @@
 ﻿using Jitter.LinearMath;
 using Silk.NET.OpenGLES;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Assets;
 
@@ -16,13 +10,9 @@ public class StaticMesh
     public List<Element> Elements { get; private set; } = new List<Element>();
 }
 
-public class ElementProxy
+public class ElementProxy(Element element)
 {
-    public ElementProxy(Element element)
-    {
-        this.Element = element;
-    }
-    public Element Element { get; private set; }
+    public Element Element { get; private set; } = element;
 
     public Matrix4x4 ModelTransform;
 
@@ -83,45 +73,45 @@ public class Element
         Indices.Clear();
     }
 
-    public List<Vector3> ConvexHull = new List<Vector3>();
+    public List<Vector3> ConvexHull = [];
 
     public void SetupConvexHull()
     {
         ConvexHull.Clear();
-        List<Vector3> vertices = new List<Vector3>();
-        Vertices.ForEach(V => vertices.Add(V.Position));
+        var vertices = new List<Vector3>();
+        Vertices.ForEach(v => vertices.Add(v.Position));
         var list = JConvexHull.Build(vertices, JConvexHull.Approximation.Level10);
         foreach(var i in list)
         {
             ConvexHull.Add(vertices[i]);
         }
     }
-    public void SetupBTN()
+    public void SetupBtn()
     {
-        for (int i = 0; i < Indices.Count; i += 3)
+        for (var i = 0; i < Indices.Count; i += 3)
         {
             var p1 = Vertices[(int)Indices[i]];
             var p2 = Vertices[(int)Indices[i + 1]];
             var p3 = Vertices[(int)Indices[i + 2]];
 
-            Vector3 Edge1 = p2.Position - p1.Position;
-            Vector3 Edge2 = p3.Position - p1.Position;
-            Vector2 DeltaUV1 = p2.TexCoord - p1.TexCoord;
-            Vector2 DeltaUV2 = p3.TexCoord - p1.TexCoord;
+            var edge1 = p2.Position - p1.Position;
+            var edge2 = p3.Position - p1.Position;
+            var deltaUv1 = p2.TexCoord - p1.TexCoord;
+            var deltaUv2 = p3.TexCoord - p1.TexCoord;
 
-            float f = 1.0f / (DeltaUV1.X * DeltaUV2.Y - DeltaUV2.X * DeltaUV1.Y);
+            var f = 1.0f / (deltaUv1.X * deltaUv2.Y - deltaUv2.X * deltaUv1.Y);
 
             Vector3 tangent1;
             Vector3 bitangent1;
 
-            tangent1.X = f * (DeltaUV2.Y * Edge1.X - DeltaUV1.Y * Edge2.X);
-            tangent1.Y = f * (DeltaUV2.Y * Edge1.Y - DeltaUV1.Y * Edge2.Y);
-            tangent1.Z = f * (DeltaUV2.Y * Edge1.Z - DeltaUV1.Y * Edge2.Z);
+            tangent1.X = f * (deltaUv2.Y * edge1.X - deltaUv1.Y * edge2.X);
+            tangent1.Y = f * (deltaUv2.Y * edge1.Y - deltaUv1.Y * edge2.Y);
+            tangent1.Z = f * (deltaUv2.Y * edge1.Z - deltaUv1.Y * edge2.Z);
             tangent1 = Vector3.Normalize(tangent1);
 
-            bitangent1.X = f * (-DeltaUV2.X * Edge1.X + DeltaUV1.X * Edge2.X);
-            bitangent1.Y = f * (-DeltaUV2.X * Edge1.Y + DeltaUV1.X * Edge2.Y);
-            bitangent1.Z = f * (-DeltaUV2.X * Edge1.Z + DeltaUV1.X * Edge2.Z);
+            bitangent1.X = f * (-deltaUv2.X * edge1.X + deltaUv1.X * edge2.X);
+            bitangent1.Y = f * (-deltaUv2.X * edge1.Y + deltaUv1.X * edge2.Y);
+            bitangent1.Z = f * (-deltaUv2.X * edge1.Z + deltaUv1.X * edge2.Z);
             bitangent1 = Vector3.Normalize(bitangent1);
 
             p1.Tangent = tangent1;

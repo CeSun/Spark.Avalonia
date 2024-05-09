@@ -1,51 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
-namespace Spark.Util;
+namespace Spark.Utils;
 public struct Box :
     IAdditionOperators<Box, Vector3, Box>, IAdditionOperators<Box, Box, Box>
 {
-    public int ComperaTo(Box box, int Axis)
+    public readonly int CompareWith(Box box, int axis)
     {
-        var num = (MiddlePoint[Axis] - box.MiddlePoint[Axis]);  
+        var num = (MiddlePoint[axis] - box.MiddlePoint[axis]);  
         if (num == 0)
             return 0;
         return num > 0 ? 1: -1;
     }
+
     public Vector3 MinPoint 
     {
-        get => _MinPoint;
+        get => _minPoint;
         set 
         {
-            _MinPoint = value;
+            _minPoint = value;
             MiddlePoint = (MinPoint + MaxPoint) / 2;
         }
     }
     public Vector3 MaxPoint 
     {
-        get => _MaxPoint;
+        get => _maxPoint;
         set 
         {
-            _MaxPoint = value;
+            _maxPoint = value;
             MiddlePoint = (MaxPoint - MinPoint) / 2;
         }
     }
 
-    private Vector3 _MinPoint;
-    private Vector3 _MaxPoint;
+    private Vector3 _minPoint;
+    private Vector3 _maxPoint;
     public Vector3 MiddlePoint { get; private set; }
 
     public float GetDistance(Vector3 location)
     {
-        float min = (MinPoint - location).Length();
+        var min = (MinPoint - location).Length();
 
-        for(int i = 1; i < 8; i ++)
+        for(var i = 1; i < 8; i ++)
         {
-            float tmp = (this[i] - location).Length();
+            var tmp = (this[i] - location).Length();
             if (tmp < min)
                 min = tmp;
         }
@@ -65,7 +61,6 @@ public struct Box :
             return false;
         if (box.MaxPoint.Z > this.MaxPoint.Z)
             return false;
-
         return true;
     }
     public Vector3 this[int index]
@@ -132,9 +127,9 @@ public struct Box :
     }
 
 
-    public bool TestPlanes(Plane[] Planes)
+    public bool TestPlanes(Plane[] planes)
     {
-        foreach(var plane in Planes)
+        foreach(var plane in planes)
         {
             var num = 0;
             for(var j = 0; j < 8; j ++)

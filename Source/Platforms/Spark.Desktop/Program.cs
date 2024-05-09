@@ -26,7 +26,7 @@ var sma = Engine.CreateActor<StaticMeshActor>();
 StaticMesh mesh = new StaticMesh();
 using (var sr = new StreamReader("E:\\Spark.Engine\\Source\\Platform\\Resource\\Content\\StaticMesh\\Jason.glb"))
 {
-    sma.StaticMesh = Engine.ImportStaticMeshFromGLB(sr.BaseStream);
+    sma.StaticMesh = Engine.ImportStaticMeshFromGlb(sr.BaseStream);
 }
 sma.Position = camera1.ForwardVector * 50 + camera1.UpVector * -50;
 // 创建一个定向光源

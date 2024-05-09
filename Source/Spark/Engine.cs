@@ -8,29 +8,22 @@ namespace Spark;
 
 public class Engine
 {
-    BaseRenderer Renderer;
-    private readonly List<Action<GL>> RenderMethods = new();
-    private readonly List<Action<GL>> TmpRenderMethods = new();
-    public BaseRenderTarget DefaultRenderTarget { get; set; }
+    private readonly BaseRenderer _renderer = new ForwardRenderer();
+    private readonly List<Action<GL>> _renderMethods = [];
+    private readonly List<Action<GL>> _tmpRenderMethods = [];
+    public BaseRenderTarget DefaultRenderTarget { get; set; } = new CanvasRenderTarget();
 
-    private readonly List<DirectionLightActor> _DirectionLightActors = new();
-    public IReadOnlyList<DirectionLightActor> DirectionLightActors => _DirectionLightActors;
+    private readonly List<DirectionLightActor> _directionLightActors = [];
+    public IReadOnlyList<DirectionLightActor> DirectionLightActors => _directionLightActors;
 
-    private readonly List<PointLightActor> _PointLightActors = new();
-    public IReadOnlyList<PointLightActor> PointLightActors => _PointLightActors;
+    private readonly List<PointLightActor> _pointLightActors = [];
+    public IReadOnlyList<PointLightActor> PointLightActors => _pointLightActors;
 
-    public Octree Octree { get; private set; }
-    public Engine() 
+    public Octree Octree { get; private set; } = new();
+
+    public T CreateActor<T>() where T : Actor, IActorCreator<T>
     {
-        Octree = new Octree();
-        Renderer = new ForwardRenderer(new RenderFeatures { PreZ = true });
-        DefaultRenderTarget = new CanvasRenderTarget();
-    }
-
-    public T CreateActor<T>() where T : Actor, new()
-    {
-        var actor = new T();
-        actor.Engine = this;
+        var actor = T.Create(this);
         RegisterActor(actor);
         actor.Initialize();
         return actor;
@@ -38,7 +31,7 @@ public class Engine
 
     public void RemoveActor(Actor actor)
     {
-        actor.Uninitialize();
+        actor.UnInitialize();
         UnregisterActor(actor);
     }
 
@@ -48,77 +41,75 @@ public class Engine
     }
     private void RegisterActor(Actor actor)
     {
-        if (actor is CameraActor camera)
+        switch (actor)
         {
-            CameraActors.Add(camera);
+            case CameraActor camera:
+                _cameraActors.Add(camera);
+                break;
+            case DirectionLightActor directionLight:
+                _directionLightActors.Add(directionLight);
+                break;
+            case PointLightActor pointLight:
+                _pointLightActors.Add(pointLight);
+                break;
         }
-        else if (actor is DirectionLightActor directionLight)
-        {
-             _DirectionLightActors.Add(directionLight);
-        }
-        else if (actor is PointLightActor pointLight)
-        {
-            _PointLightActors.Add(pointLight);
-        }
-        _Actors.Add(actor);
+        _actors.Add(actor);
     }
 
     private void UnregisterActor(Actor actor)
     {
-        if (actor is CameraActor cam)
+        switch (actor)
         {
-            CameraActors.Remove(cam);
+            case CameraActor cam:
+                _cameraActors.Remove(cam);
+                break;
+            case DirectionLightActor directionLight:
+                _directionLightActors.Remove(directionLight);
+                break;
+            case PointLightActor pointLightActor:
+                _pointLightActors.Remove(pointLightActor);
+                break;
         }
-        else if (actor is DirectionLightActor directionLight)
-        {
-            _DirectionLightActors.Remove(directionLight);
-        }
-        else if (actor is PointLightActor pointLightActor)
-        {
-            _PointLightActors.Remove(pointLightActor);
-        }
-        _Actors.Remove(actor);
+        _actors.Remove(actor);
     }
 
-    private List<CameraActor> CameraActors = new List<CameraActor>();
-    private List<Actor> _Actors { get; set; } = new List<Actor>();
+    private readonly List<CameraActor> _cameraActors = [];
+
+    private readonly List<Actor> _actors = [];
     
-    public IReadOnlyList<Actor> Actors => _Actors;
-    public void Update(float DeltaTime)
+    public IReadOnlyList<Actor> Actors => _actors;
+    public void Update(float deltaTime)
     {
-        _Actors.ToList().ForEach(actor => actor.Update(DeltaTime));
+        _actors.ToList().ForEach(actor => actor.Update(deltaTime));
     }
 
     public void AddRenderTask(Action<GL> action)
     {
-        lock(RenderMethods)
+        lock(_renderMethods)
         {
-            RenderMethods.Add(action);
+            _renderMethods.Add(action);
         }
     }
     public void Render(GL gl)
     {
-        TmpRenderMethods.Clear();
-        lock(RenderMethods)
+        _tmpRenderMethods.Clear();
+        lock(_renderMethods)
         {
-            TmpRenderMethods.AddRange(RenderMethods);
-            RenderMethods.Clear();
+            _tmpRenderMethods.AddRange(_renderMethods);
+            _renderMethods.Clear();
         }
-        TmpRenderMethods.ForEach(m => m(gl));
-        CameraActors.Sort((left, right) =>
-        {
-            return left.Order.CompareTo(right.Order);
-        });
-        CameraActors.ForEach(camera => Renderer.Render(gl, camera));
+        _tmpRenderMethods.ForEach(m => m(gl));
+        _cameraActors.Sort((left, right) => left.Order.CompareTo(right.Order));
+        _cameraActors.ForEach(camera => _renderer.Render(gl, camera));
     }
 
     public void Initialize(GL gl)
     {
-        Renderer.Initialize(gl);
+        _renderer.Initialize(gl);
     }
 
-    public void Uninitialize(GL gl)
+    public void UnInitialize(GL gl)
     {
-        Renderer.Uninitialize(gl);
+        _renderer.UnInitialize(gl);
     }
 }

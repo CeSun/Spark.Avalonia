@@ -3,9 +3,9 @@ using System.Numerics;
 
 namespace Spark.Actors;
 
-public class SpotLightActor : BaseLightActor
+public class SpotLightActor : BaseLightActor, IActorCreator<SpotLightActor>
 {
-    public SpotLightActor()
+    public SpotLightActor(Engine engine) : base(engine)
     {
         BoundingBox = new BoundingBox(this);
         InteriorAngle = 30;
@@ -16,31 +16,31 @@ public class SpotLightActor : BaseLightActor
     public float InteriorAngle { get; set; }
     public float ExteriorAngle 
     { 
-        get => _ExteriorAngle; 
+        get => _exteriorAngle; 
         set
         {
-            _ExteriorAngle = value;
+            _exteriorAngle = value;
             UpdateOctree();
         }
     }
     public float Distance 
     {
-        get => _Distance;
+        get => _distance;
         set
         {
-            _Distance = value;
+            _distance = value;
             UpdateOctree();
         }
     }
 
-    private Plane[] tmpPlanes = new Plane[6];
+    private Plane[] _tmpPlanes = new Plane[6];
     public Plane[] GetPlanes()
     {
-        CameraActor.GetPlanes(Matrix4x4.CreateLookAt(WorldPosition, WorldPosition + ForwardVector, UpVector) * Matrix4x4.CreatePerspectiveFieldOfView(ExteriorAngle.DegreeToRadians(), 1, 0.01f, Distance), ref tmpPlanes);
-        return tmpPlanes;
+        CameraActor.GetPlanes(Matrix4x4.CreateLookAt(WorldPosition, WorldPosition + ForwardVector, UpVector) * Matrix4x4.CreatePerspectiveFieldOfView(ExteriorAngle.DegreeToRadians(), 1, 0.01f, Distance), ref _tmpPlanes);
+        return _tmpPlanes;
     }
-    public float _ExteriorAngle;
-    public float _Distance;
+    private float _exteriorAngle;
+    private float _distance;
     public override void Initialize()
     {
         base.Initialize();
@@ -49,13 +49,11 @@ public class SpotLightActor : BaseLightActor
 
     public void UpdateOctree()
     {
-        if (Engine == null)
-            return;
-        var Edge = Distance * (float)Math.Tan(InteriorAngle.DegreeToRadians());
-        var point1 = new Vector3(Edge, Edge, -1 * Distance);
-        var point2 = new Vector3(-Edge, Edge, -1 * Distance);
-        var point3 = new Vector3(-Edge, -Edge, -1 * Distance);
-        var point4 = new Vector3(Edge, -Edge, -1 * Distance);
+        var edge = Distance * (float)Math.Tan(InteriorAngle.DegreeToRadians());
+        var point1 = new Vector3(edge, edge, -1 * Distance);
+        var point2 = new Vector3(-edge, edge, -1 * Distance);
+        var point3 = new Vector3(-edge, -edge, -1 * Distance);
+        var point4 = new Vector3(edge, -edge, -1 * Distance);
         var point5 = Vector3.Zero;
 
         Engine.Octree.RemoveObject(BoundingBox);
@@ -67,9 +65,9 @@ public class SpotLightActor : BaseLightActor
         BoundingBox.Box += Vector3.Transform(point5, WorldTransform);
         Engine.Octree.InsertObject(BoundingBox);
     }
-    public override void Uninitialize()
+    public override void UnInitialize()
     {
-        base.Uninitialize();
+        base.UnInitialize();
         Engine.Octree.RemoveObject(BoundingBox);
     }
     public override void OnTransformChanged()
@@ -77,4 +75,7 @@ public class SpotLightActor : BaseLightActor
         base.OnTransformChanged();
         UpdateOctree();
     }
+
+    public new static SpotLightActor Create(Engine engine) => new(engine);
+
 }

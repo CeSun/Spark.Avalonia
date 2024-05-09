@@ -1,17 +1,12 @@
 ﻿using Silk.NET.OpenGLES;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Assets;
 
 public enum TextureChannel
 {
-    RGB,
-    RGBA
+    Rgb,
+    Rgba
 }
 
 public enum TextureFilter
@@ -21,12 +16,12 @@ public enum TextureFilter
 }
 public static class ChannelHelper
 {
-    public static GLEnum ToGLEnum(this TextureChannel channel)
+    public static GLEnum ToGlEnum(this TextureChannel channel)
     {
         return channel switch
         {
-            TextureChannel.RGB => GLEnum.Rgb,
-            TextureChannel.RGBA => GLEnum.Rgba,
+            TextureChannel.Rgb => GLEnum.Rgb,
+            TextureChannel.Rgba => GLEnum.Rgba,
             _ => throw new NotImplementedException()
         };
     }
@@ -56,10 +51,10 @@ public class Texture
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureWrapT, (int)GLEnum.Repeat);
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMinFilter, (int)GLEnum.Linear);
         gl.TexParameter(GLEnum.Texture2D, GLEnum.TextureMagFilter, (int)GLEnum.Linear);
-        GLEnum ColorSpace = Channel.ToGLEnum();
-        if (GammaCorrection == true)
+        var colorSpace = Channel.ToGlEnum();
+        if (GammaCorrection)
         {
-            ColorSpace = ColorSpace switch
+            colorSpace = colorSpace switch
             {
                 GLEnum.Rgb => GLEnum.Srgb8,
                 GLEnum.Rgba => GLEnum.Srgb8Alpha8,
@@ -68,7 +63,7 @@ public class Texture
         }
         fixed (void* p = CollectionsMarshal.AsSpan(Data))
         {
-            gl.TexImage2D(GLEnum.Texture2D, 0, (int)ColorSpace, (uint)Width, (uint)Height, 0, Channel.ToGLEnum(), GLEnum.UnsignedByte, p);
+            gl.TexImage2D(GLEnum.Texture2D, 0, (int)colorSpace, (uint)Width, (uint)Height, 0, Channel.ToGlEnum(), GLEnum.UnsignedByte, p);
         }
         gl.BindTexture(GLEnum.Texture2D, 0);
         Data.Clear();

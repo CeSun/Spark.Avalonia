@@ -1,33 +1,27 @@
 ﻿using Spark.Assets;
-using Spark.Actors;
 using Spark.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Actors;
 
-public class StaticMeshActor : Actor
+public class StaticMeshActor(Engine engine) : Actor(engine), IActorCreator<StaticMeshActor>
 {
-    private StaticMesh? _StaticMesh;
+    private StaticMesh? _staticMesh;
     public StaticMesh? StaticMesh
     {
-        get => _StaticMesh;
+        get => _staticMesh;
         set
         {
-            if (_StaticMesh == value)
+            if (_staticMesh == value)
                 return;
-            if (_StaticMesh != null)
+            if (_staticMesh != null)
             {
                 UnregisterFromOctree();
-                _StaticMesh = null;
+                _staticMesh = null;
             }
             if (value != null)
             {
-                _StaticMesh = value;
+                _staticMesh = value;
                 RegisterToOctree();
             }
         }
@@ -35,10 +29,10 @@ public class StaticMeshActor : Actor
     List<BoundingBox> BoundingBoxes { get; set; } = new List<BoundingBox>();
     private void RegisterToOctree()
     {
-        if (_StaticMesh == null)
+        if (_staticMesh == null)
             return;
         var matrix = this.WorldTransform;
-        foreach (var element in _StaticMesh.Elements)
+        foreach (var element in _staticMesh.Elements)
         {
             var proxy = new ElementProxy(element);
             var box = new BoundingBox(proxy);
@@ -85,17 +79,17 @@ public class StaticMeshActor : Actor
 
     private void UpdateOctree()
     {
-        if (_StaticMesh == null)
+        if (_staticMesh == null)
             return;
         RemoveFromOctree();
         var matrix = this.WorldTransform;
         foreach (var box in BoundingBoxes)
         {
-            var Proxy = (ElementProxy)box.Object;
+            var proxy = (ElementProxy)box.Object;
             box.Box.MinPoint = Vector3.Zero;
             box.Box.MaxPoint = Vector3.Zero;
             int i = 0;
-            foreach(var p in Proxy.Element.ConvexHull)
+            foreach(var p in proxy.Element.ConvexHull)
             {
                 if (i == 0)
                 {
@@ -108,7 +102,7 @@ public class StaticMeshActor : Actor
                 }
                 i++;
             }
-            Proxy.ModelTransform = matrix;
+            proxy.ModelTransform = matrix;
         }
         AddToOctree();
     }
@@ -118,9 +112,11 @@ public class StaticMeshActor : Actor
         UpdateOctree();
     }
 
-    public override void Uninitialize()
+    public override void UnInitialize()
     {
         RemoveFromOctree();
-        base.Uninitialize();
+        base.UnInitialize();
     }
+
+    public new static StaticMeshActor Create(Engine engine) => new(engine);
 }

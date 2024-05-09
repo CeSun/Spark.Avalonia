@@ -1,10 +1,4 @@
 ﻿using Silk.NET.OpenGLES;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.RenderTarget;
 
@@ -16,19 +10,18 @@ public class BaseRenderTarget : IDisposable
 
     public int Height { private set; get; }
 
-    private GL? gl;
+    private GL? _gl;
     public void Dispose()
     {
-        if (gl != null)
-        {
-            gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            gl = null;
-        }
+        if (_gl == null) 
+            return;
+        _gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
+        _gl = null;
     }
 
     public virtual BaseRenderTarget Use(GL gl)
     {
-        this.gl = gl;
+        this._gl = gl;
         gl.BindFramebuffer(FramebufferTarget.Framebuffer, FrameBufferObject);
         return this;
     }

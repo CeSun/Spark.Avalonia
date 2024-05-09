@@ -1,34 +1,30 @@
 ﻿using Spark.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Actors;
 
-public class PointLightActor : BaseLightActor
+public class PointLightActor : BaseLightActor, IActorCreator<PointLightActor>
 {
     public BoundingSphere BoundingSphere { get; protected set; }
     
-    public PointLightActor() : base()
+    public PointLightActor(Engine engine) : base(engine)
     {
-        BoundingSphere = new(this);
+        BoundingSphere = new BoundingSphere(this);
     }
-    private float _AttenuationRatius;
-    public float AttenuationRatius 
+
+    private float _attenuationRadius;
+    public float AttenuationRadius 
     { 
-        get => _AttenuationRatius; 
+        get => _attenuationRadius; 
         set
         {
-            _AttenuationRatius = value;
+            _attenuationRadius = value;
             UpdateOctree();
         }
     }
 
     public float MinThresholdStrong { get; set; } = 0.1f;
 
-    public float AttenuationFactor => (AttenuationRatius * AttenuationRatius) * MinThresholdStrong;
+    public float AttenuationFactor => (AttenuationRadius * AttenuationRadius) * MinThresholdStrong;
 
     public override void Initialize()
     {
@@ -41,7 +37,7 @@ public class PointLightActor : BaseLightActor
     {
         Engine.Octree.RemoveObject(BoundingSphere);
         BoundingSphere.Location = this.WorldPosition;
-        BoundingSphere.Radius = _AttenuationRatius;
+        BoundingSphere.Radius = _attenuationRadius;
         Engine.Octree.InsertObject(BoundingSphere);
     }
     public override void OnTransformChanged()
@@ -49,10 +45,13 @@ public class PointLightActor : BaseLightActor
         base.OnTransformChanged();
         UpdateOctree();
     }
-    public override void Uninitialize()
+    public override void UnInitialize()
     {
         Engine.Octree.RemoveObject(BoundingSphere);
-        base.Uninitialize();
+        base.UnInitialize();
 
     }
+
+    public new static PointLightActor Create(Engine engine) => new(engine);
+    
 }

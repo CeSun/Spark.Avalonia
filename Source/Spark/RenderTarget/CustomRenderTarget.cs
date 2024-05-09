@@ -26,7 +26,7 @@ public class CustomRenderTarget : BaseRenderTarget
         Resize(width, height);
     }
 
-    public override void Resize(int width, int height)
+    public sealed override void Resize(int width, int height)
     {
         base.Resize(width, height);
         SizeDirty = true;

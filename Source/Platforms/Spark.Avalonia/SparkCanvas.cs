@@ -69,7 +69,7 @@ public class SparkCanvas : OpenGlControlBase
         base.OnOpenGlDeinit(gl);
         RoutedEventArgs args = new RoutedEventArgs(EndPlayEvent);
         RaiseEvent(args);
-        Engine.Uninitialize(GL.GetApi(gl.GetProcAddress));
+        Engine.UnInitialize(GL.GetApi(gl.GetProcAddress));
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

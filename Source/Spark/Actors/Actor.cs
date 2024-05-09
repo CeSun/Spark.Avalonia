@@ -3,41 +3,39 @@ using System.Numerics;
 
 namespace Spark.Actors;
 
-public class Actor
+public class Actor (Engine engine) : IActorCreator<Actor>
 {
-#pragma warning disable CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-    public Engine Engine;
-#pragma warning restore CS8618 // 在退出构造函数时，不可为 null 的字段必须包含非 null 值。请考虑声明为可以为 null。
-    private Actor? _ParentActor { get; set; }
+    public Engine Engine = engine;
+
+    private Actor? _parentActor;
     public Actor? ParentActor
     {
-        get => _ParentActor;
+        get => _parentActor;
         set
         {
             if (value == null)
             {
-                if (_ParentActor != null && _Children.Contains(_ParentActor))
+                if (_parentActor != null && _children.Contains(_parentActor))
                 {
-                    _Children.Remove(_ParentActor);
+                    _children.Remove(_parentActor);
                 }
             }
             else
             {
-                _Children.Add(value);
+                _children.Add(value);
             }
-            _ParentActor = value;
+            _parentActor = value;
         }
     }
-    private List<Actor> _Children { get; set; } = new List<Actor>();
-    public IReadOnlyList<Actor> Children => _Children;
+    private readonly List<Actor> _children  = [];
+    public IReadOnlyList<Actor> Children => _children;
     public Matrix4x4 WorldTransform
     {
         get
         {
-            if (_ParentActor == null)
+            if (_parentActor == null)
                 return Transform;
-            else
-                return Transform * _ParentActor.WorldTransform;
+            return Transform * _parentActor.WorldTransform;
         }
     }
     public Vector3 WorldPosition => WorldTransform.Translation;
@@ -47,11 +45,11 @@ public class Actor
 
     public bool IsDirty 
     {
-        get => _IsDirty;
+        get => _isDirty;
         set
         {
-            _IsDirty = value;
-            if (_IsDirty == true || value == false)
+            _isDirty = value;
+            if (_isDirty || value == false)
                 return;
             foreach (var child in Children)
             {
@@ -60,32 +58,32 @@ public class Actor
         }
     }
 
-    private bool _IsDirty = false;
+    private bool _isDirty;
     public Vector3 Position 
     {
-        get => _Position;
+        get => _position;
         set 
         {
             IsDirty = true;
-            _Position = value;
+            _position = value;
         } 
     }
     public Quaternion Rotation 
     { 
-        get => _Rotation; 
+        get => _rotation; 
         set
         {
             IsDirty = true;
-            _Rotation = value;
+            _rotation = value;
         }
     }
     public Vector3 Scale 
     {
-        get => _Scale;
+        get => _scale;
         set
         {
             IsDirty = true;
-            _Scale = value;
+            _scale = value;
         }
     }
 
@@ -95,11 +93,10 @@ public class Actor
 
     public virtual void Update(float deltaTime)
     {
-        if (IsDirty == true)
-        {
-            OnTransformChanged();
-            IsDirty = false;
-        }
+        if (IsDirty != true) 
+            return;
+        OnTransformChanged();
+        IsDirty = false;
     }
     public virtual void OnTransformChanged()
     {
@@ -111,14 +108,22 @@ public class Actor
 
     }
 
-    public virtual void Uninitialize()
+    public virtual void UnInitialize()
     {
 
     }
 
-    public Vector3 _Position;
-    public Quaternion _Rotation;
-    public Vector3 _Scale = Vector3.One;
+    private Vector3 _position;
+    private Quaternion _rotation;
+    private Vector3 _scale = Vector3.One;
 
+
+    public new static Actor Create(Engine engine) => new(engine);
+}
+
+
+public interface IActorCreator<T> where T: Actor
+{
+    public static abstract T Create(Engine engine);
 
 }

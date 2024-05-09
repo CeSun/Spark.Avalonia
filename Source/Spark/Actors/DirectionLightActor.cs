@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Spark.Actors;
 
-namespace Spark.Actors;
-
-public class DirectionLightActor : BaseLightActor
+public class DirectionLightActor(Engine engine) : BaseLightActor(engine), IActorCreator<DirectionLightActor>
 {
-
+    public new static DirectionLightActor Create(Engine engine) => new(engine);
 }

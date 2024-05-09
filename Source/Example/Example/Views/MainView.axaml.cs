@@ -34,21 +34,21 @@ public partial class MainView : UserControl
         {
             using (var sr = AssetLoader.Open(new Uri("avares://Example/Assets/Jason.glb")))
             {
-                return engine.ImportStaticMeshFromGLB(sr);
+                return engine.ImportStaticMeshFromGlb(sr);
             }
         });
         var t2 = Task.Run(() =>
         {
             using (var sr = AssetLoader.Open(new Uri("avares://Example/Assets/sofa.glb")))
             {
-                return engine.ImportStaticMeshFromGLB(sr);
+                return engine.ImportStaticMeshFromGlb(sr);
             }
         });
         var t3 = Task.Run(() =>
         {
             using (var sr = AssetLoader.Open(new Uri("avares://Example/Assets/AK47.glb")))
             {
-                return engine.ImportStaticMeshFromGLB(sr);
+                return engine.ImportStaticMeshFromGlb(sr);
             }
         });
         Cube = await t2;

@@ -1,53 +1,51 @@
 ﻿using Silk.NET.OpenGLES;
 using Spark.Actors;
 using Spark.Assets;
-using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace Spark.Renderers;
 
 public abstract class BaseRenderer
 {
-    public readonly List<ElementProxy> NeedRenderStaticMeshs = new();
+    public readonly List<ElementProxy> NeedRenderStaticMeshes = new();
     public readonly List<PointLightActor> PointLightActors = new();
     public readonly List<SpotLightActor> SpotLightActors = new();
-    public readonly List<ElementProxy> OpaqueStaticMeshs = new();
-    public readonly List<ElementProxy> MaskedStaticMeshs = new();
-    public readonly List<ElementProxy> TranslucentStaticMeshs = new();
+    public readonly List<ElementProxy> OpaqueStaticMeshes = new();
+    public readonly List<ElementProxy> MaskedStaticMeshes = new();
+    public readonly List<ElementProxy> TranslucentStaticMeshes = new();
     public virtual void Initialize(GL gl)
     {
     }
-    public virtual void Render(GL gl, CameraActor Camera)
+    public virtual void Render(GL gl, CameraActor camera)
     {
-        Filter(Camera);
+        Filter(camera);
     }
-    public virtual void Uninitialize(GL gl)
+    public virtual void UnInitialize(GL gl)
     {
     }
 
     protected static unsafe (uint vao, uint vbo, uint ebo) CreateQuad(GL gl)
     {
-        Span<float> Vertics = stackalloc float[] {
+        Span<float> vertices = [
             -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
             -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
             1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
             1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        };
-        Span<int> Indics = stackalloc int[] { 0, 1, 2, 2, 1, 3 };
+        ];
+        Span<int> indices = [0, 1, 2, 2, 1, 3];
         var vao = gl.GenVertexArray();
         var vbo = gl.GenBuffer();
         var ebo = gl.GenBuffer();
         gl.BindVertexArray(vao);
         gl.BindBuffer(GLEnum.ArrayBuffer, vbo);
-        fixed(void* p = Vertics)
+        fixed(void* p = vertices)
         {
-            gl.BufferData(GLEnum.ArrayBuffer, (nuint)Vertics.Length * sizeof(float), p, GLEnum.StaticDraw);
+            gl.BufferData(GLEnum.ArrayBuffer, (nuint)vertices.Length * sizeof(float), p, GLEnum.StaticDraw);
         }
 
         gl.BindBuffer(GLEnum.ElementArrayBuffer, ebo);
-        fixed (void* p = Indics)
+        fixed (void* p = indices)
         {
-            gl.BufferData(GLEnum.ElementArrayBuffer, (nuint)Indics.Length * sizeof(uint), p, GLEnum.StaticDraw);
+            gl.BufferData(GLEnum.ElementArrayBuffer, (nuint)indices.Length * sizeof(uint), p, GLEnum.StaticDraw);
         }
 
         // Location
@@ -59,29 +57,37 @@ public abstract class BaseRenderer
         gl.BindVertexArray(0);
         return (vao, vbo, ebo);
     }
-    private void Filter(CameraActor Camera)
+    private void Filter(CameraActor camera)
     {
-        NeedRenderStaticMeshs.Clear();
+        NeedRenderStaticMeshes.Clear();
         PointLightActors.Clear();
-        OpaqueStaticMeshs.Clear();
-        MaskedStaticMeshs.Clear();
-        TranslucentStaticMeshs.Clear();
+        OpaqueStaticMeshes.Clear();
+        MaskedStaticMeshes.Clear();
+        TranslucentStaticMeshes.Clear();
         SpotLightActors.Clear();
-        Camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshs, Camera.GetPlanes());
-        Camera.Engine.Octree.FrustumCulling(PointLightActors, Camera.GetPlanes());
-        Camera.Engine.Octree.FrustumCulling(SpotLightActors, Camera.GetPlanes());
-        foreach (var proxy in NeedRenderStaticMeshs)
+        camera.Engine.Octree.FrustumCulling(NeedRenderStaticMeshes, camera.GetPlanes());
+        camera.Engine.Octree.FrustumCulling(PointLightActors, camera.GetPlanes());
+        camera.Engine.Octree.FrustumCulling(SpotLightActors, camera.GetPlanes());
+        foreach (var proxy in NeedRenderStaticMeshes)
         {
             var element = proxy.Element;
             if (element.Material == null)
                 continue;
-            // 混合模式
-            if (element.Material.BlendMode == BlendMode.Opaque)
-                OpaqueStaticMeshs.Add(proxy);
-            else if (element.Material.BlendMode == BlendMode.Masked)
-                MaskedStaticMeshs.Add(proxy);
-            else if (element.Material.BlendMode == BlendMode.Translucent)
-                TranslucentStaticMeshs.Add(proxy);
+            switch (element.Material.BlendMode)
+            {
+                // 混合模式
+                case BlendMode.Opaque:
+                    OpaqueStaticMeshes.Add(proxy);
+                    break;
+                case BlendMode.Masked:
+                    MaskedStaticMeshes.Add(proxy);
+                    break;
+                case BlendMode.Translucent:
+                    TranslucentStaticMeshes.Add(proxy);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }
@@ -91,47 +97,37 @@ public class RenderFeatures
     public bool PreZ { get; set; } = false;
 }
 
-public class GLDebugGroup : IDisposable
+public class GlDebugGroup(string groupName) : IDisposable
 {
-    public string GroupName;
-    private GL? gl;
-    public GLDebugGroup(string GroupName)
-    {
-        this.GroupName = GroupName;
-    }
+    public string GroupName = groupName;
+    private GL? _gl;
 
-    public GLDebugGroup PushGroup(GL gl)
+    public GlDebugGroup PushGroup(GL gl)
     {
-        this.gl = gl;
-        if (gl != null)
-        {
-            gl.PushGroup(GroupName);
-        }
+        this._gl = gl;
+        _gl.PushGroup(GroupName);
         return this;
     }
     public void Dispose()
     {
-        if (gl != null)
-        {
-            gl.PopGroup();
-        }
+        _gl?.PopGroup();
     }
 }
-public static class GLExternFunctions
+public static class GlExternFunctions
 {
-    static bool SupportDebugGroup = true;
-    public static void PushGroup(this GL gl, string DebugInfo)
+    private static bool _supportDebugGroup = true;
+    public static void PushGroup(this GL gl, string debugInfo)
     {
 #if DEBUG
-        if (SupportDebugGroup == false)
+        if (_supportDebugGroup == false)
             return;
         try
         {
-            gl.PushDebugGroup(DebugSource.DebugSourceApplication, 1, (uint)DebugInfo.Length, DebugInfo);
+            gl.PushDebugGroup(DebugSource.DebugSourceApplication, 1, (uint)debugInfo.Length, debugInfo);
         }
         catch
         {
-            SupportDebugGroup = false;
+            _supportDebugGroup = false;
         }
 #endif
     }
@@ -139,7 +135,7 @@ public static class GLExternFunctions
     public static void PopGroup(this GL gl)
     {
 #if DEBUG
-        if (SupportDebugGroup == false)
+        if (_supportDebugGroup == false)
             return;
         try
         {
@@ -147,7 +143,7 @@ public static class GLExternFunctions
         }
         catch
         {
-            SupportDebugGroup = false;
+            _supportDebugGroup = false;
         }
 #endif
     }

@@ -16,13 +16,13 @@ public class DeferredRenderer : BaseRenderer
         base.Initialize(gl);
     }
 
-    public override void Render(GL gl, CameraActor Camera)
+    public override void Render(GL gl, CameraActor camera)
     {
-        base.Render(gl, Camera);
+        base.Render(gl, camera);
 
     }
-    public override void Uninitialize(GL gl)
+    public override void UnInitialize(GL gl)
     {
-        base.Uninitialize(gl);
+        base.UnInitialize(gl);
     }
 }

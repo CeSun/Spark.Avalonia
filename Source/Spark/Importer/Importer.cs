@@ -2,10 +2,8 @@
 using StbImageSharp;
 using SharpGLTF.Schema2;
 using Texture = Spark.Assets.Texture;
-using Silk.NET.OpenGLES;
 using System.Numerics;
 using Material = Spark.Assets.Material;
-using Spark.Actors;
 
 namespace Spark.Importer;
 
@@ -33,20 +31,22 @@ public static class Importer
 
     private static Texture ImportTexture(ImageResult result)
     {
-        var texture = new Texture();
-        texture.Width = result.Width;
-        texture.Height = result.Height;
-        texture.Channel = result.Comp switch
+        var texture = new Texture
         {
-            ColorComponents.RedGreenBlue => TextureChannel.RGB,
-            ColorComponents.RedGreenBlueAlpha => TextureChannel.RGBA,
-            _ => throw new TextureChannelNotSupportException()
+            Width = result.Width,
+            Height = result.Height,
+            Channel = result.Comp switch
+            {
+                ColorComponents.RedGreenBlue => TextureChannel.Rgb,
+                ColorComponents.RedGreenBlueAlpha => TextureChannel.Rgba,
+                _ => throw new TextureChannelNotSupportException()
+            }
         };
         texture.Data.AddRange(result.Data);
         return texture;
     }
 
-    public static StaticMesh ImportStaticMeshFromGLB(this Engine engine, Stream stream)
+    public static StaticMesh ImportStaticMeshFromGlb(this Engine engine, Stream stream)
     {
         var model = ModelRoot.ReadGLB(stream);
         return engine.ImportStaticMeshFromGltfModel(model);
@@ -61,21 +61,21 @@ public static class Importer
             {
                 Element element = new Element();
                 // 顶点
-                var Position = mesh.GetVertexAccessor("POSITION").AsVector3Array();
-                var Normal = mesh.GetVertexAccessor("NORMAL").AsVector3Array();
-                var TexCoord = mesh.GetVertexAccessor("TEXCOORD_0").AsVector2Array();
-                var Color = mesh.GetVertexAccessor("COLOR_0")?.AsColorArray();
-                for (var i = 0; i < Position.Count; i++)
+                var position = mesh.GetVertexAccessor("POSITION").AsVector3Array();
+                var normal = mesh.GetVertexAccessor("NORMAL").AsVector3Array();
+                var texCoord = mesh.GetVertexAccessor("TEXCOORD_0").AsVector2Array();
+                var color = mesh.GetVertexAccessor("COLOR_0")?.AsColorArray();
+                for (var i = 0; i < position.Count; i++)
                 {
-                    Vertex vertex = new Vertex() 
+                    var vertex = new Vertex() 
                     {
-                        Position = Position[i],
-                        TexCoord = TexCoord[i],
-                        Normal = Normal[i],
+                        Position = position[i],
+                        TexCoord = texCoord[i],
+                        Normal = normal[i],
                     };
-                    if (Color != null)
+                    if (color != null)
                     {
-                        vertex.Color = new Vector3(Color[i].X, Color[i].Y, Color[i].Z);
+                        vertex.Color = new Vector3(color[i].X, color[i].Y, color[i].Z);
                     }
 
                     element.Vertices.Add(vertex);
@@ -103,8 +103,7 @@ public static class Importer
                     }
                     else if (channel != null)
                     {
-                        ;
-                        for (int i = 0; i < element.Vertices.Count; i++)
+                        for (var i = 0; i < element.Vertices.Count; i++)
                         {
                             element.Vertices[i] = element.Vertices[i] with
                             {
@@ -113,7 +112,7 @@ public static class Importer
                         }
                     }
                     channel = mesh.Material.FindChannel("Normal");
-                    if (channel != null && channel.Value.Texture != null)
+                    if (channel is { Texture: not null })
                     {
                         element.Material.Normal = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
                     }
@@ -123,7 +122,7 @@ public static class Importer
                         element.Material.MetallicRoughness = engine.ImportTextureFromMemory(channel.Value.Texture.PrimaryImage.Content.Content.ToArray());
                     }
                 }
-                element.SetupBTN();
+                element.SetupBtn();
                 element.SetupConvexHull();
                 engine.AddRenderTask(element.SetupRender);
                 staticMesh.Elements.Add(element);

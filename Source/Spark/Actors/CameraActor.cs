@@ -1,24 +1,18 @@
-﻿using SharpGLTF.Transforms;
-using Silk.NET.OpenGLES;
-using Spark.RenderTarget;
+﻿using Spark.RenderTarget;
 using Spark.Util;
-using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Actors;
 
+[Flags]
 public enum CameraClearFlag
 {
     ColorFlag = (1 << 0),
     DepthFlag = (1 << 1),
     Skybox = (1 << 2),
 }
-public class CameraActor : Actor
+public class CameraActor(Engine engine) : Actor(engine), IActorCreator<CameraActor>
 {
     public float NearPlane = 10;
 
@@ -44,48 +38,51 @@ public class CameraActor : Actor
         RenderTarget = Engine.DefaultRenderTarget;
     }
 
-    private Plane[] tmpPlanes = new Plane[6];
+    private Plane[] _tmpPlanes = new Plane[6];
     public Plane[] GetPlanes()
     {
-        GetPlanes(ViewTransform * ProjectTransform, ref tmpPlanes);
-        return tmpPlanes;
+        GetPlanes(ViewTransform * ProjectTransform, ref _tmpPlanes);
+        return _tmpPlanes;
     }
-    public static void GetPlanes(Matrix4x4 ViewTransform, ref Plane[] Planes)
+    public static void GetPlanes(Matrix4x4 viewTransform, ref Plane[] planes)
     {
-        if (Planes.Length < 6)
+        if (planes.Length < 6)
         {
-            Planes = new Plane[6];
+            planes = new Plane[6];
         }
 
         //左侧  
-        Planes[0].Normal.X = ViewTransform[0, 3] + ViewTransform[0, 0];
-        Planes[0].Normal.Y = ViewTransform[1, 3] + ViewTransform[1, 0];
-        Planes[0].Normal.Z = ViewTransform[2, 3] + ViewTransform[2, 0];
-        Planes[0].D = ViewTransform[3, 3] + ViewTransform[3, 0];
+        planes[0].Normal.X = viewTransform[0, 3] + viewTransform[0, 0];
+        planes[0].Normal.Y = viewTransform[1, 3] + viewTransform[1, 0];
+        planes[0].Normal.Z = viewTransform[2, 3] + viewTransform[2, 0];
+        planes[0].D = viewTransform[3, 3] + viewTransform[3, 0];
         //右侧
-        Planes[1].Normal.X = ViewTransform[0, 3] - ViewTransform[0, 0];
-        Planes[1].Normal.Y = ViewTransform[1, 3] - ViewTransform[1, 0];
-        Planes[1].Normal.Z = ViewTransform[2, 3] - ViewTransform[2, 0];
-        Planes[1].D = ViewTransform[3, 3] - ViewTransform[3, 0];
+        planes[1].Normal.X = viewTransform[0, 3] - viewTransform[0, 0];
+        planes[1].Normal.Y = viewTransform[1, 3] - viewTransform[1, 0];
+        planes[1].Normal.Z = viewTransform[2, 3] - viewTransform[2, 0];
+        planes[1].D = viewTransform[3, 3] - viewTransform[3, 0];
         //上侧
-        Planes[2].Normal.X = ViewTransform[0, 3] - ViewTransform[0, 1];
-        Planes[2].Normal.Y = ViewTransform[1, 3] - ViewTransform[1, 1];
-        Planes[2].Normal.Z = ViewTransform[2, 3] - ViewTransform[2, 1];
-        Planes[2].D = ViewTransform[3, 3] - ViewTransform[3, 1];
+        planes[2].Normal.X = viewTransform[0, 3] - viewTransform[0, 1];
+        planes[2].Normal.Y = viewTransform[1, 3] - viewTransform[1, 1];
+        planes[2].Normal.Z = viewTransform[2, 3] - viewTransform[2, 1];
+        planes[2].D = viewTransform[3, 3] - viewTransform[3, 1];
         //下侧
-        Planes[3].Normal.X = ViewTransform[0, 3] + ViewTransform[0, 1];
-        Planes[3].Normal.Y = ViewTransform[1, 3] + ViewTransform[1, 1];
-        Planes[3].Normal.Z = ViewTransform[2, 3] + ViewTransform[2, 1];
-        Planes[3].D = ViewTransform[3, 3] + ViewTransform[3, 1];
+        planes[3].Normal.X = viewTransform[0, 3] + viewTransform[0, 1];
+        planes[3].Normal.Y = viewTransform[1, 3] + viewTransform[1, 1];
+        planes[3].Normal.Z = viewTransform[2, 3] + viewTransform[2, 1];
+        planes[3].D = viewTransform[3, 3] + viewTransform[3, 1];
         //Near
-        Planes[4].Normal.X = ViewTransform[0, 3] + ViewTransform[0, 2];
-        Planes[4].Normal.Y = ViewTransform[1, 3] + ViewTransform[1, 2];
-        Planes[4].Normal.Z = ViewTransform[2, 3] + ViewTransform[2, 2];
-        Planes[4].D = ViewTransform[3, 3] + ViewTransform[3, 2];
+        planes[4].Normal.X = viewTransform[0, 3] + viewTransform[0, 2];
+        planes[4].Normal.Y = viewTransform[1, 3] + viewTransform[1, 2];
+        planes[4].Normal.Z = viewTransform[2, 3] + viewTransform[2, 2];
+        planes[4].D = viewTransform[3, 3] + viewTransform[3, 2];
         //Far
-        Planes[5].Normal.X = ViewTransform[0, 3] - ViewTransform[0, 2];
-        Planes[5].Normal.Y = ViewTransform[1, 3] - ViewTransform[1, 2];
-        Planes[5].Normal.Z = ViewTransform[2, 3] - ViewTransform[2, 2];
-        Planes[5].D = ViewTransform[3, 3] - ViewTransform[3, 2];
+        planes[5].Normal.X = viewTransform[0, 3] - viewTransform[0, 2];
+        planes[5].Normal.Y = viewTransform[1, 3] - viewTransform[1, 2];
+        planes[5].Normal.Z = viewTransform[2, 3] - viewTransform[2, 2];
+        planes[5].D = viewTransform[3, 3] - viewTransform[3, 2];
     }
+
+
+    public new static CameraActor Create(Engine engine) => new(engine);
 }
