@@ -56,6 +56,6 @@ window.Update += deltaTime =>
 
 window.Closing += () =>
 {
-    Engine.Uninitialize(gl!);
+    Engine.UnInitialize(gl!);
 };
 window.Run();

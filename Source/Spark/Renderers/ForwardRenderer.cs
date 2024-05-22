@@ -10,8 +10,8 @@ namespace Spark.Renderers;
 
 public class ForwardRenderer : BaseRenderer
 {
-    private readonly CustomRenderTarget _baseRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false };
-    private readonly CustomRenderTarget _postProcessRenderTarget = new CustomRenderTarget(0, 0) { IsHdr = true, HasStencil = false, Filter = TextureFilter.Liner };
+    private readonly CustomRenderTarget _baseRenderTarget = new(0, 0) { IsHdr = true, HasStencil = false };
+    private readonly CustomRenderTarget _postProcessRenderTarget = new(0, 0) { IsHdr = true, HasStencil = false, Filter = TextureFilter.Liner };
 
     private Shader? _ambientLightOpaqueShader;
     private Shader? _directionLightOpaqueShader;
