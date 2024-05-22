@@ -44,12 +44,12 @@ void main()
 	Direction = normalize(Direction);
 
 	vec2 Direction1 = Direction * Offset * _Scale;
-	vec4 N1 = texture(ColorTexture, TexCoord + Direction2);
-	vec4 P1 = texture(ColorTexture, TexCoord - Direction2);
+	vec4 N1 = texture(ColorTexture, TexCoord + Direction1);
+	vec4 P1 = texture(ColorTexture, TexCoord - Direction1);
 
 	vec4 Result = (N1 + P1) * 0.5f;
 
-	if (Contrast > 0.5)
+	if (Contrast > 0.1)
 	{
 		glColor = Result;
 	}
