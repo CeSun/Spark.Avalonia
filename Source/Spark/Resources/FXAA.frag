@@ -16,8 +16,7 @@ float CalcGrayscale(vec3 Color)
 void main()
 {
 	float _Scale = 0.5;
-
-	float ConsoleCharpness = 8.0f;
+	float _Sharpness = 8.0;
 
 	vec2 TexCoord = OutTexCoord * vec2(CameraRenderTargetSize / RealRenderTargetSize);
 	vec2 Offset = 1.0f / vec2(textureSize(ColorTexture, 0));
@@ -47,11 +46,18 @@ void main()
 	vec4 N1 = texture(ColorTexture, TexCoord + Direction1);
 	vec4 P1 = texture(ColorTexture, TexCoord - Direction1);
 
-	vec4 Result = (N1 + P1) * 0.5f;
+	vec4 Result = (N1 + P1) * 0.5;
 
-	if (Contrast > 0.1)
+	float DirAbsMinTimesC = min(abs(Direction.x), abs(Direction.y)) * _Sharpness;
+	vec2 Direction2 = clamp(Direction1 / DirAbsMinTimesC, -2.0, 2.0) * 2.0;
+
+	vec4 N2 = texture(ColorTexture, TexCoord + Direction2 * Offset);
+	vec4 P2 = texture(ColorTexture, TexCoord - Direction2 * Offset);
+	vec4 Result2 = Result * 0.5 + (N2 + P2) * 0.25;
+
+	if(Contrast > 0.1) 
 	{
-		glColor = Result;
+		glColor = Result2;
 	}
 	else 
 	{

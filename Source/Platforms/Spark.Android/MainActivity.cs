@@ -44,7 +44,7 @@ public class MainActivity : SilkActivity
 
         view.Closing += () =>
         {
-            Engine.Uninitialize(gl!);
+            Engine.UnInitialize(gl!);
         };
         view.Run();
 
